@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOUD MINDS ENGINE</title>
+<meta name="description" content="Free AI content creation tool for dark psychology creators.">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="LM Engine">
+<link rel="manifest" href="manifest.json">
+<!-- Apple touch icon fallback (inline SVG as data URI) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230a0a0a'/><text x='50%25' y='54%25' font-family='monospace' font-size='260' fill='%23f0ede6' text-anchor='middle' dominant-baseline='middle'>▣</text></svg>">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Cutive+Mono&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --border: #1e1e1e;
+    --border-light: #2a2a2a;
+    --text: #f0ede6;
+    --text-dim: #6a6a6a;
+    --text-mid: #999;
+    --accent: #f0ede6;
+    --red: #c0392b;
+    --mono: 'Space Mono', monospace;
+    --typewriter: 'Cutive Mono', monospace;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    overflow-x: hidden;
+  }
+
+  /* LAYOUT */
+  .app {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: var(--typewriter);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .logo span {
+    color: var(--text);
+  }
+
+  .version {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+  }
+
+  /* MAIN */
+  main {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    height: calc(100vh - 61px);
+  }
+
+  /* LEFT PANEL */
+  .panel-left {
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-label {
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .input-area {
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field-label {
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  textarea, input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--text);
+    font-family: var(--typewriter);
+    font-size: 13px;
+    padding: 14px 16px;
+    resize: none;
+    outline: none;
+    width: 100%;
+    line-height: 1.7;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus, input[type="text"]:focus {
+    border-color: #3a3a3a;
+  }
+
+  textarea::placeholder, input::placeholder {
+    color: var(--text-dim);
+    font-family: var(--typewriter);
+  }
+
+  textarea { height: 90px; }
+
+  /* TONE SELECTOR */
+  .tone-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .tone-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .tone-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
+  .tone-btn.active { border-color: var(--text); color: var(--text); background: #161616; }
+
+  /* SCRIPT MODE BUTTONS — same style as tone-btn */
+  .stone-btn, .slen-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .stone-btn:hover, .slen-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
+  .stone-btn.active, .slen-btn.active { border-color: var(--text); color: var(--text); background: #161616; }
+
+  /* QUOTE TONE BUTTONS */
+  .qtone-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 10px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .qtone-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
+  .qtone-btn.active { border-color: var(--text); color: var(--text); background: #161616; }
+
+  /* BG TOGGLE */
+  .bg-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .bg-opt {
+    border: 1px solid var(--border-light);
+    padding: 10px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-align: center;
+    transition: all 0.15s;
+  }
+
+  .bg-opt.dark { background: #0a0a0a; color: #f0ede6; }
+  .bg-opt.light { background: #f5f2eb; color: #0a0a0a; }
+  .bg-opt.active { outline: 1px solid var(--text); outline-offset: 2px; }
+
+  /* GENERATE BTN */
+  .generate-btn {
+    margin: 0 24px 24px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    padding: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .generate-btn .btn-text { position: relative; z-index: 1; }
+
+  .loading-bar {
+    position: absolute;
+    left: 0; top: 0; height: 100%;
+    background: rgba(0,0,0,0.15);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  /* RIGHT PANEL */
+  .panel-right {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-top {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .slide-counter {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 4px;
+  }
+
+  .view-btn {
+    background: none;
+    border: 1px solid var(--border-light);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .view-btn.active { border-color: var(--text); color: var(--text); }
+
+  /* CAROUSEL OUTPUT */
+  .output-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+  }
+
+  /* SINGLE VIEW */
+  .single-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    height: 100%;
+  }
+
+  .slide-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 18px;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nav-btn:hover { border-color: #3a3a3a; }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .nav-index {
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    min-width: 60px;
+    text-align: center;
+  }
+
+  /* SLIDE CARD */
+  .slide-card {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 9 / 16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .slide-card.dark-bg { background: #0a0a0a; border: 1px solid #1e1e1e; }
+  .slide-card.light-bg { background: #f5f2eb; border: 1px solid #ddd9d0; }
+
+  .slide-inner {
+    padding: 15%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .slide-text {
+    font-family: var(--typewriter);
+    line-height: 1.85;
+    white-space: pre-line;
+    text-align: center;
+  }
+
+  .slide-card.dark-bg .slide-text { color: #f0ede6; }
+  .slide-card.light-bg .slide-text { color: #0a0a0a; }
+
+  .slide-text.cover-text { font-size: clamp(20px, 3.5vw, 28px); }
+  .slide-text.body-text { font-size: clamp(13px, 1.8vw, 16px); }
+  .slide-text.final-text { font-size: clamp(13px, 1.8vw, 15px); }
+
+  /* GRID VIEW */
+  .grid-view {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .grid-slide {
+    aspect-ratio: 9/16;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .grid-slide:hover { border-color: #3a3a3a; }
+  .grid-slide.active-grid { border-color: var(--text) !important; }
+  .grid-slide.dark-bg { background: #0a0a0a; border-color: #1e1e1e; }
+  .grid-slide.light-bg { background: #f5f2eb; border-color: #ddd9d0; }
+
+  .grid-slide .slide-text {
+    font-size: 7px;
+    line-height: 1.7;
+    padding: 12%;
+    text-align: center;
+    white-space: pre-line;
+  }
+
+  .grid-slide.dark-bg .slide-text { color: #f0ede6; }
+  .grid-slide.light-bg .slide-text { color: #0a0a0a; }
+
+  .slide-num-badge {
+    position: absolute;
+    bottom: 6px; right: 8px;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    opacity: 0.3;
+    font-family: var(--mono);
+  }
+
+  .dark-bg .slide-num-badge { color: #f0ede6; }
+  .light-bg .slide-num-badge { color: #0a0a0a; }
+
+  /* COPY SECTION */
+  .copy-section {
+    border-top: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .copy-btn {
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .copy-btn:hover { border-color: #3a3a3a; color: var(--text); }
+  .copy-btn.copied { color: #7ec98f; border-color: #7ec98f; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 32px;
+    opacity: 0.3;
+    margin-bottom: 8px;
+  }
+
+  .empty-label {
+    font-family: var(--typewriter);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+  }
+
+  .empty-sub {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    max-width: 240px;
+    line-height: 1.8;
+    color: #3a3a3a;
+  }
+
+  /* ERROR */
+  .error-msg {
+    font-family: var(--typewriter);
+    font-size: 11px;
+    color: var(--red);
+    letter-spacing: 0.1em;
+    padding: 12px 16px;
+    border: 1px solid rgba(192,57,43,0.3);
+    background: rgba(192,57,43,0.05);
+    margin: 0 24px 16px;
+  }
+
+  /* STREAMING */
+  .stream-indicator {
+    display: inline-block;
+    width: 6px; height: 14px;
+    background: var(--text);
+    opacity: 0.7;
+    animation: blink 0.8s step-end infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+  }
+
+  @keyframes blink { 0%,100%{opacity:0.7} 50%{opacity:0} }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; }
+
+  /* FADE IN */
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn 0.4s ease forwards; }
+
+  /* PROGRESS DOTS */
+  .progress-dots {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 480px;
+  }
+
+  .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--border-light);
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  .dot.filled { background: var(--text-dim); }
+  .dot.current { background: var(--text); }
+</style>
+</head>
+<body>
+<!-- ONBOARDING OVERLAY -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9999;overflow-y:auto;display:flex;align-items:center;justify-content:center;">
+  <div style="max-width:480px;width:100%;padding:40px 32px;">
+    <div style="font-family:'Cutive Mono',monospace;font-size:11px;letter-spacing:0.3em;color:#6a6a6a;margin-bottom:8px;">LOUD MINDS ENGINE</div>
+    <div style="font-family:'Space Mono',monospace;font-size:22px;color:#f0ede6;margin-bottom:8px;">Setup your API keys</div>
+    <div style="font-family:'Cutive Mono',monospace;font-size:12px;color:#3a3a3a;line-height:1.8;margin-bottom:32px;">Your keys are stored locally in your browser. They are never sent to any server other than the respective APIs.</div>
+
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;font-family:'Space Mono',monospace;margin-bottom:6px;">ANTHROPIC API KEY <span style="color:#c0392b;">*</span></div>
+        <div style="position:relative;">
+          <input id="ob-anthropic" type="text" placeholder="sk-ant-..." autocomplete="off" spellcheck="false" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#f0ede6;font-family:'Cutive Mono',monospace;font-size:12px;padding:12px;outline:none;box-sizing:border-box;padding-right:60px;">
+          <span onclick="const el=document.getElementById('ob-anthropic');el.type=el.type==='text'?'password':'text';this.textContent=el.type==='text'?'HIDE':'SHOW';" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:8px;color:#6a6a6a;cursor:pointer;letter-spacing:0.1em;">HIDE</span>
+        </div>
+        <div style="font-size:9px;color:#3a3a3a;font-family:'Cutive Mono',monospace;margin-top:4px;">Get it at <span style="color:#6a6a6a;">console.anthropic.com</span> → API Keys</div>
+      </div>
+
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;font-family:'Space Mono',monospace;margin-bottom:6px;">ELEVENLABS API KEY <span style="color:#3a3a3a;">(optional — for audio)</span></div>
+        <div style="position:relative;">
+          <input id="ob-elevenlabs" type="text" placeholder="your ElevenLabs key..." autocomplete="off" spellcheck="false" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#f0ede6;font-family:'Cutive Mono',monospace;font-size:12px;padding:12px;outline:none;box-sizing:border-box;padding-right:60px;">
+          <span onclick="const el=document.getElementById('ob-elevenlabs');el.type=el.type==='text'?'password':'text';this.textContent=el.type==='text'?'HIDE':'SHOW';" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:8px;color:#6a6a6a;cursor:pointer;letter-spacing:0.1em;">HIDE</span>
+        </div>
+        <div style="font-size:9px;color:#3a3a3a;font-family:'Cutive Mono',monospace;margin-top:4px;">Get it at <span style="color:#6a6a6a;">elevenlabs.io</span> → Profile → API Key</div>
+      </div>
+
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;font-family:'Space Mono',monospace;margin-bottom:6px;">ELEVENLABS VOICE ID <span style="color:#3a3a3a;">(optional)</span></div>
+        <input id="ob-voiceid" type="text" placeholder="your cloned voice ID..." autocomplete="off" spellcheck="false" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#f0ede6;font-family:'Cutive Mono',monospace;font-size:12px;padding:12px;outline:none;box-sizing:border-box;">
+        <div style="font-size:9px;color:#3a3a3a;font-family:'Cutive Mono',monospace;margin-top:4px;">ElevenLabs → Voices → click your voice → copy ID from URL</div>
+      </div>
+
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;font-family:'Space Mono',monospace;margin-bottom:6px;">PEXELS API KEY <span style="color:#3a3a3a;">(optional — for image backgrounds)</span></div>
+        <div style="position:relative;">
+          <input id="ob-pexels" type="text" placeholder="your Pexels key..." autocomplete="off" spellcheck="false" style="width:100%;background:#111;border:1px solid #2a2a2a;color:#f0ede6;font-family:'Cutive Mono',monospace;font-size:12px;padding:12px;outline:none;box-sizing:border-box;padding-right:60px;">
+          <span onclick="const el=document.getElementById('ob-pexels');el.type=el.type==='text'?'password':'text';this.textContent=el.type==='text'?'HIDE':'SHOW';" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Space Mono',monospace;font-size:8px;color:#6a6a6a;cursor:pointer;letter-spacing:0.1em;">HIDE</span>
+        </div>
+        <div style="font-size:9px;color:#3a3a3a;font-family:'Cutive Mono',monospace;margin-top:4px;">Get it at <span style="color:#6a6a6a;">pexels.com/api</span> — free</div>
+      </div>
+
+      <div id="ob-error" style="display:none;color:#c0392b;font-family:'Cutive Mono',monospace;font-size:11px;"></div>
+
+      <button id="ob-save" style="background:#f0ede6;color:#0a0a0a;border:none;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.35em;padding:16px;cursor:pointer;width:100%;">SAVE AND START</button>
+    </div>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <div class="logo"><span>LOUD MINDS</span> ENGINE</div>
+    <div style="display:flex; gap:4px;">
+      <button class="view-btn active" id="modeCarousel" style="font-size:9px; padding:6px 14px;">CAROUSEL</button>
+      <button class="view-btn" id="modeScript" style="font-size:9px; padding:6px 14px;">SCRIPT</button>
+      <button class="view-btn" id="modeQuote" style="font-size:9px; padding:6px 14px;">QUOTE</button>
+      <button class="view-btn" id="modeCalendar" style="font-size:9px; padding:6px 14px;">CALENDAR</button>
+    </div>
+    <div class="version">v2.0 — LOUD MINDS</div>
+    <button id="settingsBtn" style="background:none;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:5px 10px;cursor:pointer;">⚙ KEYS</button>
+  </header>
+
+  <main>
+    <!-- LEFT PANEL — CAROUSEL MODE -->
+    <div class="panel-left" id="carouselPanel">
+      <div class="panel-label">CAROUSEL INPUT</div>
+      <div class="input-area">
+
+        <div class="field-group">
+          <div class="field-label">Topic</div>
+          <textarea id="topicInput" placeholder="e.g. people who outgrow their old friendships..."></textarea>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Angle / Instruction (optional)</div>
+          <input type="text" id="angleInput" placeholder="e.g. frame it as a question-based carousel">
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Tone</div>
+          <div class="tone-grid">
+            <button class="tone-btn active" data-tone="brutal">BRUTAL</button>
+            <button class="tone-btn" data-tone="cold">COLD</button>
+            <button class="tone-btn" data-tone="raw">RAW</button>
+            <button class="tone-btn" data-tone="haunting">HAUNTING</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Background</div>
+          <div class="bg-toggle">
+            <div class="bg-opt dark active" data-bg="dark">■ BLACK</div>
+            <div class="bg-opt light" data-bg="light">□ OFF-WHITE</div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Content Keywords (optional)</div>
+          <input type="text" id="keywordsInput" placeholder="e.g. manipulation, trust, red flags">
+        </div>
+
+      </div>
+
+      <div id="errorBox" style="display:none"></div>
+      <button class="generate-btn" id="genBtn">
+        <div class="loading-bar" id="loadingBar"></div>
+        <span class="btn-text" id="btnText">GENERATE CAROUSEL</span>
+      </button>
+    </div>
+
+    <!-- LEFT PANEL — SCRIPT MODE -->
+    <div class="panel-left" id="scriptPanel" style="display:none;">
+      <div class="panel-label">SCRIPT INPUT</div>
+      <div class="input-area">
+
+        <div class="field-group">
+          <div class="field-label">Topic</div>
+          <textarea id="scriptTopicInput" placeholder="e.g. why people who read are dangerous..."></textarea>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Platform</div>
+          <div class="tone-grid">
+            <button class="tone-btn active" data-platform="tiktok" id="platformTikTok">TIKTOK</button>
+            <button class="tone-btn" data-platform="reels" id="platformReels">REELS</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Tone</div>
+          <div class="tone-grid">
+            <button class="stone-btn active" data-stone="brutal">BRUTAL</button>
+            <button class="stone-btn" data-stone="cold">COLD</button>
+            <button class="stone-btn" data-stone="raw">RAW</button>
+            <button class="stone-btn" data-stone="haunting">HAUNTING</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Video Length</div>
+          <div class="tone-grid">
+            <button class="slen-btn active" data-len="30">30 SEC</button>
+            <button class="slen-btn" data-len="60">60 SEC</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Content Keywords (optional)</div>
+          <input type="text" id="scriptKeywordsInput" placeholder="e.g. anxiety, overthinking, fear">
+        </div>
+
+      </div>
+
+      <div id="scriptErrorBox" style="display:none"></div>
+      <button class="generate-btn" id="genScriptModeBtn">
+        <div class="loading-bar" id="scriptLoadingBar"></div>
+        <span class="btn-text" id="scriptBtnText">GENERATE SCRIPT</span>
+      </button>
+    </div>
+
+    <!-- LEFT PANEL — QUOTE MODE -->
+    <div class="panel-left" id="quotePanel" style="display:none;">
+      <div class="panel-label">QUOTE INPUT</div>
+      <div class="input-area">
+
+        <div class="field-group">
+          <div class="field-label">Topic or Idea</div>
+          <textarea id="quoteTopicInput" placeholder="e.g. people who stay silent are the most dangerous..."></textarea>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Tone</div>
+          <div class="tone-grid">
+            <button class="qtone-btn active" data-qtone="brutal">BRUTAL</button>
+            <button class="qton-btn qtone-btn" data-qtone="cold">COLD</button>
+            <button class="qtone-btn" data-qtone="raw">RAW</button>
+            <button class="qtone-btn" data-qtone="haunting">HAUNTING</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-label">Format</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div class="qfmt-btn active" data-fmt="dark" style="background:#0a0a0a;border:1px solid #f0ede6;color:#f0ede6;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:10px 12px;cursor:pointer;text-align:center;">■ BLACK BG</div>
+            <div class="qfmt-btn" data-fmt="light" style="background:#f5f2eb;border:1px solid #2a2a2a;color:#0a0a0a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:10px 12px;cursor:pointer;text-align:center;">□ OFF-WHITE BG</div>
+            <div class="qfmt-btn" data-fmt="image" style="background:#111;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:10px 12px;cursor:pointer;text-align:center;">◈ IMAGE BG</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="quoteErrorBox" style="display:none"></div>
+      <button class="generate-btn" id="genQuoteBtn">
+        <div class="loading-bar" id="quoteLoadingBar"></div>
+        <span class="btn-text" id="quoteBtnText">GENERATE QUOTE</span>
+      </button>
+    </div>
+
+    <!-- RIGHT PANEL — QUOTE MODE -->
+    <div class="panel-right" id="quotOutputPanel" style="display:none; flex-direction:column;">
+      <div class="panel-top" style="border-bottom:1px solid #1e1e1e; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+        <span style="font-size:9px; letter-spacing:0.3em; color:#6a6a6a;">QUOTE OUTPUT</span>
+        <button class="copy-btn" id="exportQuoteBtn" style="font-size:8px; padding:5px 12px; display:none;">EXPORT PNG</button>
+      </div>
+      <div style="flex:1; overflow-y:auto; padding:32px; display:flex; align-items:center; justify-content:center;">
+        <div id="quoteModeOutput" style="width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#2a2a2a;text-align:center;padding:60px 0;">
+            <div style="font-size:28px;opacity:0.2;">❝</div>
+            <div style="font-size:10px;letter-spacing:0.25em;">NO QUOTE YET</div>
+            <div style="font-size:10px;color:#1e1e1e;line-height:1.8;max-width:220px;font-family:'Cutive Mono',monospace;">enter a topic and generate your quote</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDAR MODE — full width -->
+    <div id="calendarPanel" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+      <!-- CALENDAR TOP BAR -->
+      <div style="border-bottom:1px solid #1e1e1e; padding:14px 28px; display:flex; align-items:center; gap:16px; flex-shrink:0; flex-wrap:wrap;">
+        <span style="font-size:9px; letter-spacing:0.35em; color:#6a6a6a;">CONTENT CALENDAR</span>
+        <input type="text" id="calNicheInput" placeholder="Niche / topic focus (e.g. dark psychology, mindset)" style="background:#111;border:1px solid #2a2a2a;color:#f0ede6;font-family:'Cutive Mono',monospace;font-size:11px;padding:7px 12px;outline:none;width:280px;">
+        <div style="display:flex; gap:4px;">
+          <button class="cal-days-btn active" data-days="7" style="background:#161616;border:1px solid #f0ede6;color:#f0ede6;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:7px 12px;cursor:pointer;">7D</button>
+          <button class="cal-days-btn" data-days="15" style="background:#111;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:7px 12px;cursor:pointer;">15D</button>
+          <button class="cal-days-btn" data-days="30" style="background:#111;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:7px 12px;cursor:pointer;">30D</button>
+        </div>
+        <button id="genCalendarBtn" style="background:#f0ede6;color:#0a0a0a;border:none;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.3em;padding:8px 18px;cursor:pointer;">GENERATE CALENDAR</button>
+        <button id="copyCalendarBtn" style="display:none;background:#111;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:8px 14px;cursor:pointer;">COPY ALL</button>
+      </div>
+      <!-- CALENDAR TABLE -->
+      <div style="flex:1; overflow-y:auto; padding:24px 28px;">
+        <div id="calendarOutput">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;gap:10px;color:#2a2a2a;text-align:center;">
+            <div style="font-size:28px;opacity:0.2;">▦</div>
+            <div style="font-size:10px;letter-spacing:0.25em;">NO CALENDAR YET</div>
+            <div style="font-size:10px;color:#1e1e1e;line-height:1.8;font-family:'Cutive Mono',monospace;">enter a niche and generate your content plan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel-right" id="panel-right-carousel">
+      <div class="panel-top">
+        <div class="slide-counter" id="slideCounter">— / —</div>
+        <div class="view-toggle">
+          <button class="view-btn active" id="singleViewBtn">SINGLE</button>
+          <button class="view-btn" id="gridViewBtn">GRID</button>
+        </div>
+      </div>
+
+      <div class="output-area" id="outputArea">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-icon">▣</div>
+          <div class="empty-label">No carousel yet</div>
+          <div class="empty-sub">enter a topic on the left and generate your carousel</div>
+        </div>
+      </div>
+
+      <div class="copy-section" id="copySection" style="display:none">
+        <button class="copy-btn" id="copyAllBtn">COPY ALL TEXT</button>
+        <button class="copy-btn" id="copySlideBtn">COPY SLIDE</button>
+        <button class="copy-btn" id="exportBtn">EXPORT PNG</button>
+        <button class="copy-btn" id="exportAllBtn">EXPORT ALL</button>
+        <button class="copy-btn" id="genScriptBtn">GENERATE SCRIPT</button>
+        <button class="copy-btn" id="genAudioBtn">GENERATE AUDIO</button>
+        <button class="copy-btn" id="exportVideoBtn">EXPORT VIDEO</button>
+        <button class="copy-btn" id="genCaptionBtn">GENERATE CAPTION</button>
+      </div>
+
+      <!-- CAPTION OUTPUT -->
+      <div id="captionArea" style="display:none; border-top:1px solid #1e1e1e; background:#0d0d0d; flex-shrink:0; max-height:260px; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 20px 8px; border-bottom:1px solid #1e1e1e;">
+          <span style="font-size:9px; letter-spacing:0.35em; color:#6a6a6a;">CAPTION + KEYWORDS</span>
+          <div style="display:flex; gap:6px;">
+            <button class="copy-btn" id="copyCaptionBtn" style="padding:5px 12px; font-size:8px;">COPY ALL</button>
+            <button class="copy-btn" id="closeCaptionBtn" style="padding:5px 10px; font-size:10px;">✕</button>
+          </div>
+        </div>
+        <div id="captionContent" style="padding:16px 20px; display:flex; flex-direction:column; gap:14px;"></div>
+      </div>
+
+      <!-- SCRIPT OUTPUT -->
+      <div id="scriptArea" style="display:none; border-top:1px solid #1e1e1e; background:#0d0d0d; flex-shrink:0; max-height:220px; overflow-y:auto; position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 20px 8px; border-bottom:1px solid #1e1e1e;">
+          <span style="font-size:9px; letter-spacing:0.35em; color:#6a6a6a;">VOICEOVER SCRIPT — ELEVENLABS READY</span>
+          <div style="display:flex; gap:6px;">
+            <button class="copy-btn" id="copyScriptBtn" style="padding:5px 12px; font-size:8px;">COPY SCRIPT</button>
+            <button class="copy-btn" id="closeScriptBtn" style="padding:5px 10px; font-size:10px;">✕</button>
+          </div>
+        </div>
+        <div id="scriptContent" style="font-family:'Cutive Mono',monospace; font-size:12px; color:#f0ede6; line-height:1.9; padding:16px 20px; white-space:pre-wrap;"></div>
+      </div>
+
+      <!-- AUDIO PLAYER -->
+      <div id="audioArea" style="display:none; border-top:1px solid #1e1e1e; background:#0d0d0d; flex-shrink:0; padding:14px 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:9px; letter-spacing:0.35em; color:#6a6a6a;">VOICEOVER AUDIO</span>
+          <div style="display:flex; gap:6px;">
+            <button class="copy-btn" id="downloadAudioBtn" style="padding:5px 12px; font-size:8px;">DOWNLOAD MP3</button>
+            <button class="copy-btn" id="closeAudioBtn" style="padding:5px 10px; font-size:10px;">✕</button>
+          </div>
+        </div>
+        <audio id="audioPlayer" controls style="width:100%; height:32px; accent-color:#f0ede6;"></audio>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL — SCRIPT MODE -->
+    <div class="panel-right" id="scriptOutputPanel" style="display:none; flex-direction:column;">
+      <div class="panel-top" style="border-bottom:1px solid #1e1e1e; padding:12px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+        <span style="font-size:9px; letter-spacing:0.3em; color:#6a6a6a;">SCRIPT OUTPUT</span>
+        <div style="display:flex; gap:6px;">
+          <button class="copy-btn" id="exportPosterBtn" style="font-size:8px; padding:5px 12px; display:none;">EXPORT POSTER</button>
+          <button class="copy-btn" id="genScriptAudioBtn" style="font-size:8px; padding:5px 12px; display:none;">GENERATE AUDIO</button>
+          <button class="copy-btn" id="genScriptCaptionBtn" style="font-size:8px; padding:5px 12px; display:none;">GENERATE CAPTION</button>
+          <button class="copy-btn" id="copyFullScriptBtn" style="font-size:8px; padding:5px 12px;">COPY ALL</button>
+        </div>
+      </div>
+      <div style="flex:1; overflow-y:auto; padding:24px;">
+        <div id="scriptModeOutput" style="display:flex; gap:24px; align-items:flex-start;">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;gap:10px;color:#2a2a2a;text-align:center; padding: 60px 0;">
+            <div style="font-size:28px;opacity:0.2;">✎</div>
+            <div style="font-size:10px;letter-spacing:0.25em;">NO SCRIPT YET</div>
+            <div style="font-size:10px;color:#1e1e1e;line-height:1.8;max-width:220px;font-family:'Cutive Mono',monospace;">enter a topic on the left and generate your script</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCRIPT MODE CAPTION OUTPUT -->
+      <div id="scriptCaptionArea" style="display:none; border-top:1px solid #1e1e1e; background:#0d0d0d; flex-shrink:0; max-height:260px; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 20px 8px; border-bottom:1px solid #1e1e1e;">
+          <span style="font-size:9px; letter-spacing:0.35em; color:#6a6a6a;">CAPTION + KEYWORDS</span>
+          <div style="display:flex; gap:6px;">
+            <button class="copy-btn" id="copyScriptCaptionBtn" style="padding:5px 12px; font-size:8px;">COPY ALL</button>
+            <button class="copy-btn" id="closeScriptCaptionBtn" style="padding:5px 10px; font-size:10px;">✕</button>
+          </div>
+        </div>
+        <div id="scriptCaptionContent" style="padding:16px 20px; display:flex; flex-direction:column; gap:14px;"></div>
+      </div>
+    </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  // ============================================================
+  // CONFIG — loads from localStorage, set via onboarding screen
+  // ============================================================
+  const STORAGE_KEY = 'loudminds_config';
+
+  function loadConfig() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return { ANTHROPIC_KEY: '', ELEVENLABS_KEY: '', ELEVENLABS_VOICE_ID: '', PEXELS_KEY: '' };
+  }
+
+  function saveConfig(cfg) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch(e) {}
+  }
+
+  const CONFIG = loadConfig();
+
+  function hasRequiredKeys() {
+    return CONFIG.ANTHROPIC_KEY && CONFIG.ANTHROPIC_KEY !== 'PASTE_ANTHROPIC_KEY_HERE';
+  }
+  // ============================================================
+
+  // ONBOARDING — show if no Anthropic key
+  function showOnboarding() {
+    const ob = document.getElementById('onboarding');
+    ob.style.display = 'flex';
+    // Pre-fill existing values
+    document.getElementById('ob-anthropic').value = CONFIG.ANTHROPIC_KEY || '';
+    document.getElementById('ob-elevenlabs').value = CONFIG.ELEVENLABS_KEY || '';
+    document.getElementById('ob-voiceid').value = CONFIG.ELEVENLABS_VOICE_ID || '';
+    document.getElementById('ob-pexels').value = CONFIG.PEXELS_KEY || '';
+  }
+
+  function hideOnboarding() {
+    document.getElementById('onboarding').style.display = 'none';
+  }
+
+  document.getElementById('ob-save').addEventListener('click', () => {
+    const key = document.getElementById('ob-anthropic').value.trim();
+    if (!key) {
+      document.getElementById('ob-error').style.display = 'block';
+      document.getElementById('ob-error').textContent = 'Anthropic API key is required.';
+      return;
+    }
+    CONFIG.ANTHROPIC_KEY = key;
+    CONFIG.ELEVENLABS_KEY = document.getElementById('ob-elevenlabs').value.trim();
+    CONFIG.ELEVENLABS_VOICE_ID = document.getElementById('ob-voiceid').value.trim();
+    CONFIG.PEXELS_KEY = document.getElementById('ob-pexels').value.trim();
+    saveConfig(CONFIG);
+    hideOnboarding();
+  });
+
+  document.getElementById('settingsBtn').addEventListener('click', showOnboarding);
+
+  // Show onboarding on first load if no key
+  if (!hasRequiredKeys()) showOnboarding();
+
+  // STATE
+  let slides = [];
+  let currentSlide = 0;
+  let viewMode = 'single';
+  let selectedBg = 'dark';
+  let selectedTone = 'brutal';
+  let selectedScriptTone = 'brutal';
+  let selectedPlatform = 'tiktok';
+  let selectedLen = '30';
+  let isGenerating = false;
+  let appMode = 'carousel'; // 'carousel' | 'script'
+  let slideImages = [];
+
+  // MODE TOGGLE
+  const showMode = (mode) => {
+    appMode = mode;
+    ['modeCarousel','modeScript','modeQuote','modeCalendar'].forEach(id => document.getElementById(id).classList.remove('active'));
+    document.getElementById(`mode${mode.charAt(0).toUpperCase()+mode.slice(1)}`).classList.add('active');
+    document.getElementById('carouselPanel').style.display = mode === 'carousel' ? 'flex' : 'none';
+    document.getElementById('scriptPanel').style.display = mode === 'script' ? 'flex' : 'none';
+    document.getElementById('quotePanel').style.display = mode === 'quote' ? 'flex' : 'none';
+    document.getElementById('panel-right-carousel').style.display = mode === 'carousel' ? 'flex' : 'none';
+    document.getElementById('scriptOutputPanel').style.display = mode === 'script' ? 'flex' : 'none';
+    document.getElementById('quotOutputPanel').style.display = mode === 'quote' ? 'flex' : 'none';
+    // Calendar is full width — no left panel
+    document.getElementById('calendarPanel').style.display = mode === 'calendar' ? 'flex' : 'none';
+    document.querySelector('main').style.gridTemplateColumns = mode === 'calendar' ? '1fr' : '300px 1fr';
+  };
+
+  document.getElementById('modeCarousel').addEventListener('click', () => showMode('carousel'));
+  document.getElementById('modeScript').addEventListener('click', () => showMode('script'));
+  document.getElementById('modeQuote').addEventListener('click', () => showMode('quote'));
+  document.getElementById('modeCalendar').addEventListener('click', () => showMode('calendar'));
+
+  // CALENDAR — days selector
+  let selectedDays = 7;
+  document.querySelectorAll('.cal-days-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.cal-days-btn').forEach(b => {
+        b.style.background = '#111'; b.style.borderColor = '#2a2a2a'; b.style.color = '#6a6a6a';
+      });
+      btn.style.background = '#161616'; btn.style.borderColor = '#f0ede6'; btn.style.color = '#f0ede6';
+      selectedDays = parseInt(btn.dataset.days);
+    });
+  });
+
+  // CALENDAR — generate
+  document.getElementById('genCalendarBtn').addEventListener('click', async () => {
+    const niche = document.getElementById('calNicheInput').value.trim() || 'dark psychology and mindset';
+    const btn = document.getElementById('genCalendarBtn');
+    btn.textContent = 'GENERATING...';
+    btn.disabled = true;
+
+    const formats = ['Carousel', 'Script', 'Quote'];
+    const today = new Date();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CONFIG.ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4000,
+          messages: [{ role: 'user', content: `You are a TikTok content strategist for a dark psychology brand called Loud Minds. Niche: "${niche}".
+
+Generate a ${selectedDays}-day content calendar. Return ONLY valid JSON array, no markdown:
+[
+  {
+    "day": 1,
+    "format": "Carousel|Script|Quote",
+    "topic": "specific topic for this post",
+    "hook": "one punchy hook line max 12 words",
+    "best_time": "e.g. 7PM",
+    "rest": false
+  }
+]
+
+Rules:
+- Alternate formats — never same format 2 days in a row
+- Day 7, 14, 21, 28 are rest days (rest: true, no content needed, topic/hook can be empty)
+- Topics must be specific and emotionally charged, not generic
+- No em dashes anywhere
+- Hook must be scroll-stopping
+- Generate exactly ${selectedDays} entries` }]
+        })
+      });
+
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+      const calendar = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+      window._calendarData = calendar;
+
+      // Render table
+      const rows = calendar.map(entry => {
+        const date = new Date(today);
+        date.setDate(today.getDate() + entry.day - 1);
+        const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const fmtColor = entry.format === 'Carousel' ? '#6a9fb5' : entry.format === 'Script' ? '#b5836a' : '#7ec98f';
+
+        if (entry.rest) {
+          return `
+            <tr style="border-bottom:1px solid #1a1a1a;">
+              <td style="padding:12px 16px;font-family:'Space Mono',monospace;font-size:9px;color:#3a3a3a;white-space:nowrap;">Day ${entry.day}</td>
+              <td style="padding:12px 16px;font-family:'Cutive Mono',monospace;font-size:10px;color:#3a3a3a;">${dateStr}</td>
+              <td colspan="4" style="padding:12px 16px;font-family:'Space Mono',monospace;font-size:9px;color:#2a2a2a;letter-spacing:0.2em;">REST DAY</td>
+            </tr>`;
+        }
+
+        return `
+          <tr style="border-bottom:1px solid #1a1a1a;" class="cal-row">
+            <td style="padding:12px 16px;font-family:'Space Mono',monospace;font-size:9px;color:#6a6a6a;white-space:nowrap;">Day ${entry.day}</td>
+            <td style="padding:12px 16px;font-family:'Cutive Mono',monospace;font-size:10px;color:#6a6a6a;white-space:nowrap;">${dateStr}</td>
+            <td style="padding:12px 16px;">
+              <span style="font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;color:${fmtColor};border:1px solid ${fmtColor}30;padding:3px 8px;">${(entry.format || 'Carousel').toUpperCase()}</span>
+            </td>
+            <td style="padding:12px 16px;font-family:'Cutive Mono',monospace;font-size:11px;color:#f0ede6;max-width:240px;">${entry.topic}</td>
+            <td style="padding:12px 16px;font-family:'Cutive Mono',monospace;font-size:10px;color:#c8c4bc;max-width:220px;">${entry.hook}</td>
+            <td style="padding:12px 16px;font-family:'Space Mono',monospace;font-size:9px;color:#6a6a6a;white-space:nowrap;">${entry.best_time}</td>
+            <td style="padding:12px 16px;">
+              <button class="cal-gen-btn copy-btn" 
+                data-topic="${entry.topic.replace(/"/g,'&quot;')}" 
+                data-format="${entry.format}"
+                data-hook="${entry.hook.replace(/"/g,'&quot;')}"
+                style="font-size:8px;padding:5px 10px;white-space:nowrap;">
+                GENERATE →
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+
+      document.getElementById('calendarOutput').innerHTML = `
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid #2a2a2a;">
+              <th style="padding:8px 16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.3em;color:#3a3a3a;text-align:left;">DAY</th>
+              <th style="padding:8px 16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.3em;color:#3a3a3a;text-align:left;">DATE</th>
+              <th style="padding:8px 16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.3em;color:#3a3a3a;text-align:left;">FORMAT</th>
+              <th style="padding:8px 16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.3em;color:#3a3a3a;text-align:left;">TOPIC</th>
+              <th style="padding:8px 16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.3em;color:#3a3a3a;text-align:left;">HOOK IDEA</th>
+              <th style="padding:8px 16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.3em;color:#3a3a3a;text-align:left;">TIME</th>
+              <th style="padding:8px 16px;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.3em;color:#3a3a3a;text-align:left;"></th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+
+      // GENERATE button per row — switch to mode and pre-fill
+      document.querySelectorAll('.cal-gen-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const topic = btn.dataset.topic;
+          const format = btn.dataset.format;
+          const hook = btn.dataset.hook;
+
+          if (format === 'Carousel') {
+            showMode('carousel');
+            document.getElementById('topicInput').value = topic;
+            document.getElementById('angleInput').value = hook ? `Start with this hook: ${hook}` : '';
+          } else if (format === 'Script') {
+            showMode('script');
+            document.getElementById('scriptTopicInput').value = topic;
+          } else if (format === 'Quote') {
+            showMode('quote');
+            document.getElementById('quoteTopicInput').value = topic;
+          }
+        });
+      });
+
+      // Store for copy
+      window._calendarText = calendar.map(e =>
+        e.rest ? `Day ${e.day} — REST` : `Day ${e.day} | ${e.format} | ${e.topic} | Hook: ${e.hook} | ${e.best_time}`
+      ).join('\n');
+      document.getElementById('copyCalendarBtn').style.display = 'inline-block';
+
+    } catch(e) {
+      document.getElementById('calendarOutput').innerHTML = `<div style="color:#c0392b;font-family:'Cutive Mono',monospace;font-size:11px;padding:20px;">Generation failed. Check API key.</div>`;
+    }
+
+    btn.textContent = 'GENERATE CALENDAR';
+    btn.disabled = false;
+  });
+
+  document.getElementById('copyCalendarBtn').addEventListener('click', () => {
+    if (!window._calendarText) return;
+    navigator.clipboard.writeText(window._calendarText).then(() => {
+      const btn = document.getElementById('copyCalendarBtn');
+      btn.textContent = 'COPIED!';
+      btn.style.color = '#7ec98f'; btn.style.borderColor = '#7ec98f';
+      setTimeout(() => { btn.textContent = 'COPY ALL'; btn.style.color = '#6a6a6a'; btn.style.borderColor = '#2a2a2a'; }, 2000);
+    });
+  });
+
+  // QUOTE TONE BUTTONS
+  let selectedQuoteTone = 'brutal';
+  let selectedQuoteFmt = 'dark';
+  let quoteImageUrl = '';
+
+  document.querySelectorAll('.qtone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.qtone-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedQuoteTone = btn.dataset.qtone;
+    });
+  });
+
+  document.querySelectorAll('.qfmt-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.qfmt-btn').forEach(b => {
+        b.style.outline = 'none';
+      });
+      btn.style.outline = '1px solid #f0ede6';
+      btn.style.outlineOffset = '2px';
+      selectedQuoteFmt = btn.dataset.fmt;
+    });
+  });
+
+  // GENERATE QUOTE
+  document.getElementById('genQuoteBtn').addEventListener('click', async () => {
+    const topic = document.getElementById('quoteTopicInput').value.trim();
+    if (!topic) {
+      document.getElementById('quoteErrorBox').style.display = 'block';
+      document.getElementById('quoteErrorBox').className = 'error-msg';
+      document.getElementById('quoteErrorBox').textContent = 'Enter a topic first.';
+      return;
+    }
+
+    const btn = document.getElementById('genQuoteBtn');
+    const bar = document.getElementById('quoteLoadingBar');
+    btn.disabled = true;
+    document.getElementById('quoteBtnText').textContent = 'GENERATING...';
+    document.getElementById('quoteErrorBox').style.display = 'none';
+
+    let prog = 0;
+    const iv = setInterval(() => { prog = Math.min(prog + Math.random() * 12, 88); bar.style.width = prog + '%'; }, 200);
+
+    const toneMap = { brutal: 'brutally honest, no softening', cold: 'cold, clinical, sharp', raw: 'raw, vulnerable, stings', haunting: 'haunting, quiet, cinematic' };
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CONFIG.ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 300,
+          messages: [{ role: 'user', content: `Write a 4-line quote on this topic: "${topic}". Tone: ${toneMap[selectedQuoteTone]}. Rules: exactly 4 lines, each line max 10 words, no em dashes, no quotation marks, emotionally sharp, poster-worthy. Return only the 4 lines separated by newlines, nothing else.` }]
+        })
+      });
+
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      let quoteText = data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+      quoteText = cleanDashes(quoteText);
+
+      // Fetch image if needed
+      quoteImageUrl = '';
+      if (selectedQuoteFmt === 'image') {
+        try {
+          const pRes = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(topic)}&per_page=1&orientation=portrait`, {
+            headers: { 'Authorization': CONFIG.PEXELS_KEY }
+          });
+          if (pRes.ok) {
+            const pData = await pRes.json();
+            if (pData.photos && pData.photos[0]) quoteImageUrl = pData.photos[0].src.large2x;
+          }
+        } catch(e) {}
+      }
+
+      window._quoteText = quoteText;
+      window._quoteFmt = selectedQuoteFmt;
+      window._quoteImgUrl = quoteImageUrl;
+
+      // Render preview
+      const bgColor = selectedQuoteFmt === 'light' ? '#f5f2eb' : '#0a0a0a';
+      const textColor = selectedQuoteFmt === 'light' ? '#0a0a0a' : '#f0ede6';
+      const bgStyle = quoteImageUrl
+        ? `background-image:url('${quoteImageUrl}');background-size:cover;background-position:center;`
+        : `background:${bgColor};`;
+      const overlayColor = selectedQuoteFmt === 'light' ? 'rgba(245,242,235,0.55)' : 'rgba(0,0,0,0.62)';
+
+      document.getElementById('quoteModeOutput').innerHTML = `
+        <div style="width:100%;max-width:280px;aspect-ratio:9/16;${bgStyle}position:relative;border:1px solid #1e1e1e;">
+          ${quoteImageUrl ? `<div style="position:absolute;inset:0;background:${overlayColor};"></div>` : ''}
+          <div style="position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:12%;">
+            <div style="font-family:'Cutive Mono',monospace;font-size:13px;color:${textColor};line-height:2;text-align:center;white-space:pre-line;">${quoteText}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+          <button id="regenQuoteBtn" class="copy-btn" style="font-size:8px;padding:6px 12px;">REGENERATE</button>
+        </div>
+      `;
+
+      document.getElementById('exportQuoteBtn').style.display = 'inline-block';
+
+      document.getElementById('regenQuoteBtn').addEventListener('click', () => {
+        document.getElementById('genQuoteBtn').click();
+      });
+
+    } catch(e) {
+      document.getElementById('quoteModeOutput').innerHTML = `<div style="color:#c0392b;font-family:'Cutive Mono',monospace;font-size:11px;">Generation failed. Check API key.</div>`;
+    }
+
+    clearInterval(iv);
+    bar.style.width = '100%';
+    setTimeout(() => { bar.style.width = '0%'; }, 400);
+    btn.disabled = false;
+    document.getElementById('quoteBtnText').textContent = 'GENERATE QUOTE';
+  });
+
+  // EXPORT QUOTE PNG
+  document.getElementById('exportQuoteBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('exportQuoteBtn');
+    btn.textContent = 'EXPORTING...';
+    btn.disabled = true;
+
+    const W = 1080, H = 1920;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    const fmt = window._quoteFmt || 'dark';
+    const bgColor = fmt === 'light' ? '#f5f2eb' : '#0a0a0a';
+    const textColor = fmt === 'light' ? '#0a0a0a' : '#f0ede6';
+
+    if (window._quoteImgUrl) {
+      await new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const scale = Math.max(W / img.width, H / img.height);
+          const iw = img.width * scale, ih = img.height * scale;
+          ctx.drawImage(img, (W - iw) / 2, (H - ih) / 2, iw, ih);
+          resolve();
+        };
+        img.onerror = () => { ctx.fillStyle = bgColor; ctx.fillRect(0,0,W,H); resolve(); };
+        img.src = window._quoteImgUrl;
+      });
+      ctx.fillStyle = fmt === 'light' ? 'rgba(245,242,235,0.55)' : 'rgba(0,0,0,0.62)';
+      ctx.fillRect(0, 0, W, H);
+    } else {
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const fSize = 52;
+    const lineH = fSize * 2;
+    ctx.font = `${fSize}px 'Courier New', monospace`;
+    const lines = (window._quoteText || '').split('\n').filter(l => l.trim());
+    const totalH = lines.length * lineH;
+    const startY = (H / 2) - (totalH / 2) + (lineH / 2);
+    lines.forEach((line, i) => ctx.fillText(line, W / 2, startY + i * lineH));
+
+    const link = document.createElement('a');
+    link.download = 'quote.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    btn.textContent = 'EXPORTED!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'EXPORT PNG'; btn.classList.remove('copied'); btn.disabled = false; }, 2000);
+  });
+
+  // SCRIPT TONE BUTTONS
+  document.querySelectorAll('.stone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.stone-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedScriptTone = btn.dataset.stone;
+    });
+  });
+
+  // PLATFORM BUTTONS
+  document.querySelectorAll('[data-platform]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-platform]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedPlatform = btn.dataset.platform;
+    });
+  });
+
+  // LENGTH BUTTONS
+  document.querySelectorAll('.slen-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.slen-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedLen = btn.dataset.len;
+    });
+  });
+
+  // GENERATE SCRIPT MODE
+  document.getElementById('genScriptModeBtn').addEventListener('click', async () => {
+    const topic = document.getElementById('scriptTopicInput').value.trim();
+    if (!topic) {
+      document.getElementById('scriptErrorBox').style.display = 'block';
+      document.getElementById('scriptErrorBox').className = 'error-msg';
+      document.getElementById('scriptErrorBox').textContent = 'Enter a topic first.';
+      return;
+    }
+
+    const btn = document.getElementById('genScriptModeBtn');
+    const loadingBar = document.getElementById('scriptLoadingBar');
+    btn.disabled = true;
+    document.getElementById('scriptBtnText').textContent = 'GENERATING...';
+    document.getElementById('scriptErrorBox').style.display = 'none';
+
+    let prog = 0;
+    const iv = setInterval(() => { prog = Math.min(prog + Math.random() * 10, 88); loadingBar.style.width = prog + '%'; }, 200);
+
+    const toneMap = { brutal: 'brutally honest, direct, no softening', cold: 'cold, clinical, emotionally detached', raw: 'raw, vulnerable, honest in a way that stings', haunting: 'haunting, quiet, cinematic' };
+    const keywords = document.getElementById('scriptKeywordsInput').value.trim();
+    const wordCount = selectedLen === '30' ? '80 to 100' : '160 to 200';
+
+    const prompt = `You are a viral TikTok script writer for a dark psychology content brand called Loud Minds.
+
+Write a short-form video script on this topic: "${topic}"
+Platform: ${selectedPlatform}
+Tone: ${toneMap[selectedScriptTone]}
+Target length: ${selectedLen} seconds (${wordCount} words)
+${keywords ? `Content keywords to weave in: ${keywords}` : ''}
+
+STRUCTURE — use exactly these three sections:
+
+HOOK (first 3 seconds — must stop the scroll. One sharp sentence. No fluff. Make it feel like a secret being revealed.)
+
+BODY (the main content — deliver the core truth. Short punchy sentences. Build pressure. No filler.)
+
+CTA (last 3 seconds — one direct line. Not "follow for more." Something that makes them feel something or want to share.)
+
+FORMAT:
+Return exactly this structure with labels:
+
+HOOK:
+[hook text]
+
+BODY:
+[body text]
+
+CTA:
+[cta text]
+
+Write only the script. No explanation. No extra text. Never use em dashes (—). Use commas, periods, or spaces instead.`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CONFIG.ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      let raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+      raw = cleanDashes(raw);
+
+      // Parse sections
+      const hookMatch = raw.match(/HOOK:\s*([\s\S]*?)(?=BODY:)/i);
+      const bodyMatch = raw.match(/BODY:\s*([\s\S]*?)(?=CTA:)/i);
+      const ctaMatch = raw.match(/CTA:\s*([\s\S]*?)$/i);
+
+      const hook = hookMatch ? hookMatch[1].trim() : '';
+      const body = bodyMatch ? bodyMatch[1].trim() : '';
+      const cta = ctaMatch ? ctaMatch[1].trim() : '';
+
+      // Split body into 4-line max chunks per poster
+      const splitBodyIntoChunks = (text, maxLines = 4) => {
+        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+        const chunks = [];
+        let current = [];
+        sentences.forEach(s => {
+          current.push(s.trim());
+          if (current.length >= maxLines) {
+            chunks.push(current.join(' '));
+            current = [];
+          }
+        });
+        if (current.length) chunks.push(current.join(' '));
+        return chunks.length ? chunks : [text];
+      };
+
+      const bodyChunks = splitBodyIntoChunks(body, 4);
+      const totalPosters = 1 + bodyChunks.length + 1; // hook + body chunks + cta
+
+      // Fetch enough Pexels images
+      let posterImgs = Array(totalPosters).fill('');
+      try {
+        const pRes = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(topic)}&per_page=${totalPosters}&orientation=square`, {
+          headers: { 'Authorization': CONFIG.PEXELS_KEY }
+        });
+        if (pRes.ok) {
+          const pData = await pRes.json();
+          if (pData.photos) {
+            posterImgs = Array.from({ length: totalPosters }, (_, i) =>
+              pData.photos[i] ? pData.photos[i].src.large2x : ''
+            );
+          }
+        }
+      } catch(e) {}
+
+      const posterSections = [
+        { label: 'HOOK', text: hook, img: posterImgs[0] },
+        ...bodyChunks.map((chunk, i) => ({ label: bodyChunks.length > 1 ? `BODY ${i+1}` : 'BODY', text: chunk, img: posterImgs[1 + i] })),
+        { label: 'CTA', text: cta, img: posterImgs[totalPosters - 1] },
+      ];
+
+      const renderPosterThumb = (section, idx) => {
+        const bg = section.img
+          ? `background-image:url('${section.img}');background-size:cover;background-position:center;`
+          : 'background:#0a0a0a;';
+        const safeId = `poster-text-${idx}`;
+        return `
+          <div style="flex-shrink:0;">
+            <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:8px;">${section.label} POSTER</div>
+            <div style="width:180px;height:180px;${bg}position:relative;border:1px solid #1e1e1e;">
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,0.62);"></div>
+              <div style="position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:10%;">
+                <textarea id="${safeId}"
+                  data-idx="${idx}"
+                  style="background:transparent;border:none;outline:none;resize:none;width:100%;height:100%;font-family:'Cutive Mono',monospace;font-size:8px;color:#f0ede6;line-height:1.8;text-align:center;cursor:text;overflow:hidden;"
+                >${section.text}</textarea>
+              </div>
+            </div>
+          </div>`;
+      };
+
+      document.getElementById('scriptModeOutput').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:28px;">
+
+          <!-- POSTER PREVIEWS — editable -->
+          <div>
+            <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:4px;">POSTERS</div>
+            <div style="font-size:8px;color:#3a3a3a;font-family:'Cutive Mono',monospace;margin-bottom:12px;">click text to edit</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;">
+              ${posterSections.map((s, i) => renderPosterThumb(s, i)).join('')}
+            </div>
+          </div>
+
+          <!-- SCRIPT SECTIONS — editable -->
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <div>
+              <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:10px;">HOOK</div>
+              <textarea id="edit-hook" style="background:transparent;border:none;border-left:2px solid #f0ede6;outline:none;resize:none;width:100%;color:#f0ede6;font-size:14px;line-height:1.85;font-family:'Cutive Mono',monospace;padding-left:14px;overflow:hidden;"
+                rows="3">${hook}</textarea>
+            </div>
+            <div>
+              <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:10px;">BODY</div>
+              <textarea id="edit-body" style="background:transparent;border:none;border-left:2px solid #3a3a3a;outline:none;resize:none;width:100%;color:#c8c4bc;font-size:12px;line-height:1.95;font-family:'Cutive Mono',monospace;padding-left:14px;overflow:hidden;"
+                rows="6">${body}</textarea>
+            </div>
+            <div>
+              <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:10px;">CTA</div>
+              <textarea id="edit-cta" style="background:transparent;border:none;border-left:2px solid #3a3a3a;outline:none;resize:none;width:100%;color:#f0ede6;font-size:12px;line-height:1.85;font-family:'Cutive Mono',monospace;padding-left:14px;overflow:hidden;"
+                rows="2">${cta}</textarea>
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      // Sync poster textarea edits back to _posterData
+      posterSections.forEach((section, idx) => {
+        const ta = document.getElementById(`poster-text-${idx}`);
+        if (ta) ta.addEventListener('input', () => {
+          window._posterData.sections[idx].text = ta.value;
+        });
+      });
+
+      // Sync script edits to _lastScript and _scriptForAudio
+      ['hook','body','cta'].forEach(key => {
+        const el = document.getElementById(`edit-${key}`);
+        if (el) el.addEventListener('input', () => {
+          const h = document.getElementById('edit-hook').value;
+          const b = document.getElementById('edit-body').value;
+          const c = document.getElementById('edit-cta').value;
+          window._lastScript = `HOOK:\n${h}\n\nBODY:\n${b}\n\nCTA:\n${c}`;
+          window._scriptForAudio = `${h} ${b} ${c}`;
+        });
+      });
+
+      // Store poster data for export
+      window._posterData = { sections: posterSections };
+      window._lastScript = `HOOK:\n${hook}\n\nBODY:\n${body}\n\nCTA:\n${cta}`;
+      window._scriptForAudio = `${hook} ${body} ${cta}`;
+      document.getElementById('exportPosterBtn').style.display = 'inline-block';
+      document.getElementById('genScriptAudioBtn').style.display = 'inline-block';
+      document.getElementById('genScriptCaptionBtn').style.display = 'inline-block';
+
+    } catch(err) {
+      document.getElementById('scriptModeOutput').innerHTML = `<div style="color:#c0392b;font-family:'Cutive Mono',monospace;font-size:11px;">Generation failed. Check API key.</div>`;
+    }
+
+    clearInterval(iv);
+    loadingBar.style.width = '100%';
+    setTimeout(() => { loadingBar.style.width = '0%'; }, 400);
+    btn.disabled = false;
+    document.getElementById('scriptBtnText').textContent = 'GENERATE SCRIPT';
+  });
+
+  document.getElementById('exportPosterBtn').addEventListener('click', async () => {
+    if (!window._posterData) return;
+    const btn = document.getElementById('exportPosterBtn');
+    btn.textContent = 'EXPORTING...';
+    btn.disabled = true;
+
+    const PW = 1080, PH = 1920;
+    const zip = new JSZip();
+    const sections = window._posterData.sections;
+
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const fileLabel = section.label.toLowerCase().replace(/\s+/g, '-');
+      const canvas = document.createElement('canvas');
+      canvas.width = PW; canvas.height = PH;
+      const ctx = canvas.getContext('2d');
+
+      if (section.img) {
+        await new Promise(resolve => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            const scale = Math.max(PW / img.width, PH / img.height);
+            const w = img.width * scale, h = img.height * scale;
+            ctx.drawImage(img, (PW - w) / 2, (PH - h) / 2, w, h);
+            resolve();
+          };
+          img.onerror = () => { ctx.fillStyle = '#0a0a0a'; ctx.fillRect(0,0,PW,PH); resolve(); };
+          img.src = section.img;
+        });
+        ctx.fillStyle = 'rgba(0,0,0,0.62)';
+        ctx.fillRect(0, 0, PW, PH);
+      } else {
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, PW, PH);
+      }
+
+      ctx.fillStyle = '#f0ede6';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const fSize = section.label === 'HOOK' ? 52 : 36;
+      const lineH = fSize * 1.9;
+      const maxW = PW * 0.72;
+      ctx.font = `${fSize}px 'Courier New', monospace`;
+
+      const rawLines = section.text.split('\n').filter(l => l.trim());
+      let wrappedLines = [];
+      rawLines.forEach(line => {
+        const words = line.split(' ');
+        let current = '';
+        words.forEach(word => {
+          const test = current ? current + ' ' + word : word;
+          if (ctx.measureText(test).width > maxW && current) {
+            wrappedLines.push(current);
+            current = word;
+          } else { current = test; }
+        });
+        if (current) wrappedLines.push(current);
+      });
+
+      const totalH = wrappedLines.length * lineH;
+      const startY = (PH / 2) - (totalH / 2) + (lineH / 2);
+      wrappedLines.forEach((line, li) => ctx.fillText(line, PW / 2, startY + li * lineH));
+
+      const base64 = canvas.toDataURL('image/png').split(',')[1];
+      zip.file(`poster-${String(i+1).padStart(2,'0')}-${fileLabel}.png`, base64, { base64: true });
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    saveAs(blob, 'script-posters.zip');
+
+    btn.textContent = 'EXPORTED!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'EXPORT POSTER'; btn.classList.remove('copied'); btn.disabled = false; }, 2500);
+  });
+
+  // GENERATE AUDIO FROM SCRIPT MODE
+  document.getElementById('genScriptAudioBtn').addEventListener('click', async () => {
+    if (!window._scriptForAudio) return;
+    const btn = document.getElementById('genScriptAudioBtn');
+    btn.textContent = 'GENERATING...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${CONFIG.ELEVENLABS_VOICE_ID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': CONFIG.ELEVENLABS_KEY
+        },
+        body: JSON.stringify({
+          text: window._scriptForAudio,
+          model_id: 'eleven_v3',
+          voice_settings: { stability: 0.4, similarity_boost: 0.85, style: 0.3, use_speaker_boost: true }
+        })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window._scriptAudioBlob = blob;
+
+      // Decode audio for waveform + sync
+      const arrayBuf = await blob.arrayBuffer();
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioBuf = await audioCtx.decodeAudioData(arrayBuf.slice(0));
+      window._scriptAudioBuf = audioBuf;
+
+      // Show inline audio player + waveform
+      const existing = document.getElementById('scriptAudioPlayer');
+      if (existing) existing.remove();
+      const playerDiv = document.createElement('div');
+      playerDiv.id = 'scriptAudioPlayer';
+      playerDiv.style.cssText = 'border-top:1px solid #1e1e1e;background:#0d0d0d;flex-shrink:0;';
+      playerDiv.innerHTML = `
+        <div style="padding:12px 24px 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <audio id="scriptAudio" controls src="${url}" style="flex:1;min-width:180px;height:30px;accent-color:#f0ede6;"></audio>
+          <button id="removeSilenceBtn" style="background:#111;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;padding:6px 10px;cursor:pointer;">REMOVE SILENCE</button>
+          <button id="syncExportBtn" style="background:#111;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;padding:6px 10px;cursor:pointer;">SYNC EXPORT</button>
+          <button id="dlScriptAudioBtn" style="background:#111;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:0.2em;padding:6px 10px;cursor:pointer;">DL MP3</button>
+        </div>
+        <div style="padding:0 24px 6px;">
+          <div style="font-size:8px;letter-spacing:0.25em;color:#3a3a3a;margin-bottom:4px;">WAVEFORM — click to set split points between posters</div>
+          <canvas id="waveformCanvas" style="width:100%;height:60px;cursor:crosshair;background:#0a0a0a;border:1px solid #1e1e1e;display:block;"></canvas>
+          <div id="splitInfo" style="font-size:8px;color:#6a6a6a;font-family:'Space Mono',monospace;margin-top:4px;letter-spacing:0.1em;"></div>
+        </div>
+      `;
+      document.getElementById('scriptOutputPanel').appendChild(playerDiv);
+
+      // DRAW WAVEFORM
+      const wfCanvas = document.getElementById('waveformCanvas');
+      const wfCtx = wfCanvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const wfW = wfCanvas.offsetWidth;
+      const wfH = 60;
+      wfCanvas.width = wfW * dpr;
+      wfCanvas.height = wfH * dpr;
+      wfCtx.scale(dpr, dpr);
+
+      const chData = audioBuf.getChannelData(0);
+      const totalSamples = chData.length;
+      const step = Math.ceil(totalSamples / wfW);
+
+      wfCtx.fillStyle = '#0a0a0a';
+      wfCtx.fillRect(0, 0, wfW, wfH);
+
+      const drawWaveform = (splitPoints) => {
+        wfCtx.fillStyle = '#0a0a0a';
+        wfCtx.fillRect(0, 0, wfW, wfH);
+        wfCtx.strokeStyle = '#2a2a2a';
+        wfCtx.lineWidth = 1;
+        for (let x = 0; x < wfW; x++) {
+          let min = 1, max = -1;
+          for (let s = 0; s < step; s++) {
+            const idx = x * step + s;
+            if (idx < totalSamples) { const v = chData[idx]; if (v < min) min = v; if (v > max) max = v; }
+          }
+          const yMin = ((1 + min) / 2) * wfH;
+          const yMax = ((1 + max) / 2) * wfH;
+          wfCtx.beginPath();
+          wfCtx.moveTo(x, yMin);
+          wfCtx.lineTo(x, yMax);
+          wfCtx.strokeStyle = '#3a3a3a';
+          wfCtx.stroke();
+        }
+        // Draw split lines
+        if (splitPoints) {
+          splitPoints.forEach((sp, i) => {
+            const x = (sp / audioBuf.duration) * wfW;
+            wfCtx.strokeStyle = '#f0ede6';
+            wfCtx.lineWidth = 1;
+            wfCtx.setLineDash([3, 3]);
+            wfCtx.beginPath();
+            wfCtx.moveTo(x, 0);
+            wfCtx.lineTo(x, wfH);
+            wfCtx.stroke();
+            wfCtx.setLineDash([]);
+            wfCtx.fillStyle = '#f0ede6';
+            wfCtx.font = '8px Space Mono, monospace';
+            wfCtx.fillText(`${i + 1}`, x + 2, 10);
+          });
+        }
+        // Playhead
+        const audio = document.getElementById('scriptAudio');
+        if (audio) {
+          const ph = (audio.currentTime / audioBuf.duration) * wfW;
+          wfCtx.strokeStyle = '#f0ede670';
+          wfCtx.lineWidth = 1;
+          wfCtx.beginPath();
+          wfCtx.moveTo(ph, 0);
+          wfCtx.lineTo(ph, wfH);
+          wfCtx.stroke();
+        }
+      };
+
+      // Split points state — auto-detect from silence
+      const detectSplitPoints = () => {
+        const sections = window._posterData ? window._posterData.sections : [];
+        const numSplits = sections.length - 1;
+        if (numSplits <= 0) return [];
+        // Detect silence regions
+        const threshold = 0.015;
+        const minSilence = Math.floor(0.2 * audioBuf.sampleRate);
+        let silences = [];
+        let inSil = false, silStart = 0;
+        for (let i = 0; i < totalSamples; i++) {
+          if (Math.abs(chData[i]) < threshold) {
+            if (!inSil) { silStart = i; inSil = true; }
+          } else if (inSil) {
+            if (i - silStart > minSilence) silences.push({ start: silStart, end: i, mid: (silStart + i) / 2 });
+            inSil = false;
+          }
+        }
+        // Pick evenly distributed silences as split points
+        const splits = [];
+        const segLen = totalSamples / (numSplits + 1);
+        for (let s = 1; s <= numSplits; s++) {
+          const target = s * segLen;
+          const closest = silences.sort((a, b) => Math.abs(a.mid - target) - Math.abs(b.mid - target))[0];
+          splits.push(closest ? closest.mid / audioBuf.sampleRate : (s * audioBuf.duration) / (numSplits + 1));
+        }
+        return splits.sort((a, b) => a - b);
+      };
+
+      window._splitPoints = detectSplitPoints();
+      drawWaveform(window._splitPoints);
+
+      // Update split info text
+      const updateSplitInfo = () => {
+        const sections = window._posterData ? window._posterData.sections : [];
+        const pts = [0, ...window._splitPoints, audioBuf.duration];
+        const info = sections.map((s, i) => {
+          const dur = (pts[i+1] - pts[i]).toFixed(1);
+          return `${s.label}: ${dur}s`;
+        }).join('  |  ');
+        document.getElementById('splitInfo').textContent = info;
+      };
+      updateSplitInfo();
+
+      // Click waveform to move nearest split point
+      wfCanvas.addEventListener('click', (e) => {
+        const rect = wfCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const t = (x / rect.width) * audioBuf.duration;
+        // Find nearest split point and move it
+        let nearest = 0, minDist = Infinity;
+        window._splitPoints.forEach((sp, i) => {
+          const d = Math.abs(sp - t);
+          if (d < minDist) { minDist = d; nearest = i; }
+        });
+        window._splitPoints[nearest] = Math.max(0.1, Math.min(audioBuf.duration - 0.1, t));
+        window._splitPoints.sort((a, b) => a - b);
+        drawWaveform(window._splitPoints);
+        updateSplitInfo();
+      });
+
+      // Playhead animation
+      const audioEl = document.getElementById('scriptAudio');
+      audioEl.addEventListener('timeupdate', () => drawWaveform(window._splitPoints));
+
+      // DL MP3
+      document.getElementById('dlScriptAudioBtn').addEventListener('click', () => {
+        const l = document.createElement('a');
+        l.href = document.getElementById('scriptAudio').src;
+        l.download = 'script-audio.mp3';
+        l.click();
+      });
+
+      // SYNC EXPORT — audio WAV clips only, fast
+      document.getElementById('syncExportBtn').addEventListener('click', async () => {
+        const syncBtn = document.getElementById('syncExportBtn');
+        syncBtn.textContent = 'EXPORTING...';
+        syncBtn.disabled = true;
+
+        const sections = window._posterData ? window._posterData.sections : [];
+        if (!sections.length) { syncBtn.textContent = 'NO POSTERS'; setTimeout(() => { syncBtn.textContent = 'SYNC EXPORT'; syncBtn.disabled = false; }, 2000); return; }
+
+        try {
+          // Re-decode if audioBuf lost
+          if (!window._scriptAudioBuf && window._scriptAudioBlob) {
+            syncBtn.textContent = 'DECODING...';
+            const ab = await window._scriptAudioBlob.arrayBuffer();
+            const ac = new (window.AudioContext || window.webkitAudioContext)();
+            window._scriptAudioBuf = await ac.decodeAudioData(ab);
+          }
+
+          if (!window._scriptAudioBuf) {
+            syncBtn.textContent = 'NO AUDIO — generate audio first';
+            setTimeout(() => { syncBtn.textContent = 'SYNC EXPORT'; syncBtn.disabled = false; }, 3000);
+            return;
+          }
+
+          if (!window._splitPoints || !window._splitPoints.length) {
+            window._splitPoints = [];
+            const dur = window._scriptAudioBuf.duration;
+            const n = sections.length - 1;
+            for (let s = 1; s <= n; s++) window._splitPoints.push((s * dur) / (n + 1));
+          }
+
+          const zip = new JSZip();
+          const aBuf = window._scriptAudioBuf;
+          const pts = [0, ...window._splitPoints, aBuf.duration];
+          const sr = aBuf.sampleRate;
+          const numCh = aBuf.numberOfChannels;
+
+          // Helper — encode WAV in chunks with yield to avoid blocking
+          const encodeWavChunked = async (startSample, endSample) => {
+            const clipLen = endSample - startSample;
+            const dataSize = clipLen * numCh * 2;
+            const wavBuf = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(wavBuf);
+            const ws = (o, s) => { for (let j=0;j<s.length;j++) view.setUint8(o+j,s.charCodeAt(j)); };
+            ws(0,'RIFF'); view.setUint32(4,36+dataSize,true); ws(8,'WAVE'); ws(12,'fmt ');
+            view.setUint32(16,16,true); view.setUint16(20,1,true); view.setUint16(22,numCh,true);
+            view.setUint32(24,sr,true); view.setUint32(28,sr*numCh*2,true);
+            view.setUint16(32,numCh*2,true); view.setUint16(34,16,true);
+            ws(36,'data'); view.setUint32(40,dataSize,true);
+
+            const CHUNK = 8192; // process in small chunks, yield between each
+            let off = 44;
+            for (let s2 = 0; s2 < clipLen; s2 += CHUNK) {
+              const end = Math.min(s2 + CHUNK, clipLen);
+              for (let si = s2; si < end; si++) {
+                for (let c = 0; c < numCh; c++) {
+                  const val = Math.max(-1, Math.min(1, aBuf.getChannelData(c)[startSample + si]));
+                  view.setInt16(off, val < 0 ? val * 0x8000 : val * 0x7FFF, true);
+                  off += 2;
+                }
+              }
+              // Yield to browser to prevent blocking
+              await new Promise(r => setTimeout(r, 0));
+            }
+            return wavBuf;
+          };
+
+          for (let i = 0; i < sections.length; i++) {
+            const section = sections[i];
+            const label = String(i+1).padStart(2,'0') + '-' + section.label.toLowerCase().replace(/\s+/g,'-');
+            syncBtn.textContent = `ENCODING ${i+1}/${sections.length}...`;
+
+            const startSample = Math.floor(pts[i] * sr);
+            const endSample = Math.floor(pts[i+1] * sr);
+            const wavBuf = await encodeWavChunked(startSample, endSample);
+            zip.file(`${label}.wav`, wavBuf);
+          }
+
+          syncBtn.textContent = 'ZIPPING...';
+          const zipBlob = await zip.generateAsync({ type: 'blob' });
+          saveAs(zipBlob, 'synced-audio-clips.zip');
+
+          syncBtn.textContent = 'EXPORTED!';
+          syncBtn.style.color = '#7ec98f'; syncBtn.style.borderColor = '#7ec98f';
+          setTimeout(() => { syncBtn.textContent = 'SYNC EXPORT'; syncBtn.style.color = '#6a6a6a'; syncBtn.style.borderColor = '#2a2a2a'; syncBtn.disabled = false; }, 2500);
+
+        } catch(e) {
+          console.error(e);
+          syncBtn.textContent = 'FAILED';
+          setTimeout(() => { syncBtn.textContent = 'SYNC EXPORT'; syncBtn.disabled = false; }, 2000);
+        }
+      });
+
+      document.getElementById('removeSilenceBtn').addEventListener('click', async () => {
+        const silBtn = document.getElementById('removeSilenceBtn');
+        silBtn.textContent = 'PROCESSING...';
+        silBtn.disabled = true;
+        try {
+          const arrayBuf2 = await window._scriptAudioBlob.arrayBuffer();
+          const audioCtx2 = new AudioContext();
+          const audioBuf2 = await audioCtx2.decodeAudioData(arrayBuf2);
+          const threshold = 0.02;
+          const minSilenceSamples = Math.floor((300/1000) * audioBuf2.sampleRate);
+          const channelData2 = audioBuf2.getChannelData(0);
+          const totalSamples2 = channelData2.length;
+          let regions = [], inSound = false, regionStart = 0, silenceCount = 0;
+          for (let i = 0; i < totalSamples2; i++) {
+            if (Math.abs(channelData2[i]) > threshold) {
+              if (!inSound) { regionStart = Math.max(0, i - Math.floor(audioBuf2.sampleRate * 0.05)); inSound = true; }
+              silenceCount = 0;
+            } else if (inSound) {
+              silenceCount++;
+              if (silenceCount > minSilenceSamples) {
+                regions.push({ start: regionStart, end: i - silenceCount + Math.floor(audioBuf2.sampleRate * 0.05) });
+                inSound = false; silenceCount = 0;
+              }
+            }
+          }
+          if (inSound) regions.push({ start: regionStart, end: totalSamples2 });
+          if (!regions.length) { silBtn.textContent = 'NO SILENCE FOUND'; setTimeout(() => { silBtn.textContent = 'REMOVE SILENCE'; silBtn.disabled = false; }, 2000); return; }
+          const numCh2 = audioBuf2.numberOfChannels;
+          const totalNew = regions.reduce((s, r) => s + (r.end - r.start), 0);
+          const newBuf = audioCtx2.createBuffer(numCh2, totalNew, audioBuf2.sampleRate);
+          for (let c = 0; c < numCh2; c++) {
+            const src = audioBuf2.getChannelData(c), dst = newBuf.getChannelData(c);
+            let off = 0;
+            regions.forEach(r => { dst.set(src.subarray(r.start, r.end), off); off += r.end - r.start; });
+          }
+          const wavBlob = bufferToWav(newBuf);
+          const newUrl = URL.createObjectURL(wavBlob);
+          window._scriptAudioBlob = wavBlob;
+          window._scriptAudioBuf = newBuf;
+          document.getElementById('scriptAudio').src = newUrl;
+          document.getElementById('scriptAudio').play();
+          window._splitPoints = detectSplitPoints();
+          drawWaveform(window._splitPoints);
+          updateSplitInfo();
+          silBtn.textContent = 'SILENCE REMOVED';
+          silBtn.style.color = '#7ec98f'; silBtn.style.borderColor = '#7ec98f';
+          setTimeout(() => { silBtn.textContent = 'REMOVE SILENCE'; silBtn.style.color = '#6a6a6a'; silBtn.style.borderColor = '#2a2a2a'; silBtn.disabled = false; }, 2000);
+        } catch(e) {
+          silBtn.textContent = 'FAILED';
+          setTimeout(() => { silBtn.textContent = 'REMOVE SILENCE'; silBtn.disabled = false; }, 2000);
+        }
+      });
+
+    } catch(err) {
+      btn.textContent = 'FAILED';
+      setTimeout(() => { btn.textContent = 'GENERATE AUDIO'; }, 2000);
+    }
+
+    btn.textContent = 'GENERATE AUDIO';
+    btn.disabled = false;
+  });
+
+  document.getElementById('copyFullScriptBtn').addEventListener('click', () => {
+    if (!window._lastScript) return;
+    navigator.clipboard.writeText(window._lastScript).then(() => {
+      const btn = document.getElementById('copyFullScriptBtn');
+      btn.textContent = 'COPIED!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'COPY ALL'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+
+  // CAPTION GENERATION — shared function
+  async function generateCaption(topic, keywords, contentSummary, outputElId, areaElId, copyBtnId) {
+    const prompt = `You are a TikTok content strategist for a dark psychology brand called Loud Minds.
+
+Topic: "${topic}"
+${keywords ? `Keywords: ${keywords}` : ''}
+Content summary: ${contentSummary}
+
+Generate the following in this EXACT JSON format, no markdown, no explanation:
+{
+  "caption": "2-3 sentence post caption. Emotionally sharp, no hashtags inside, ends with a question or provocative statement.",
+  "hashtags": ["darkpsychology", "loudminds", "15 more relevant hashtags here"],
+  "seo_keywords": ["keyword1", "keyword2", "10 high-search TikTok SEO keywords here"],
+  "first_comment": "One punchy line to pin as first comment.",
+  "on_screen_text": ["line 1", "line 2", "line 3", "line 4", "line 5"]
+}
+on_screen_text rules: 5 lines max 8 words each. Standalone punchy overlay text for video. No em dashes.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CONFIG.ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+    const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    const hashtagStr = parsed.hashtags.map(h => `#${h.replace(/^#/,'')}`).join(' ');
+    const seoStr = parsed.seo_keywords.join(', ');
+    const onScreen = parsed.on_screen_text || [];
+    const onScreenStr = onScreen.join('\n');
+    window[`_captionData_${outputElId}`] = `CAPTION:\n${parsed.caption}\n\n${hashtagStr}\n\nSEO KEYWORDS:\n${seoStr}\n\nON-SCREEN TEXT:\n${onScreenStr}\n\nFIRST COMMENT:\n${parsed.first_comment}`;
+
+    document.getElementById(outputElId).innerHTML = `
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:8px;">CAPTION</div>
+        <div style="font-family:'Cutive Mono',monospace;font-size:12px;color:#f0ede6;line-height:1.85;">${parsed.caption}</div>
+      </div>
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:8px;">ON-SCREEN TEXT</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          ${onScreen.map(line => `<div style="font-family:'Cutive Mono',monospace;font-size:12px;color:#f0ede6;line-height:1.6;border-left:2px solid #f0ede6;padding-left:12px;">${line}</div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:8px;">HASHTAGS</div>
+        <div style="font-family:'Cutive Mono',monospace;font-size:11px;color:#c8c4bc;line-height:1.8;">${hashtagStr}</div>
+      </div>
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:8px;">SEO KEYWORDS</div>
+        <div style="font-family:'Cutive Mono',monospace;font-size:11px;color:#6a6a6a;line-height:1.8;">${seoStr}</div>
+      </div>
+      <div>
+        <div style="font-size:9px;letter-spacing:0.35em;color:#6a6a6a;margin-bottom:8px;">FIRST COMMENT</div>
+        <div style="font-family:'Cutive Mono',monospace;font-size:12px;color:#f0ede6;line-height:1.85;border-left:2px solid #3a3a3a;padding-left:12px;">${parsed.first_comment}</div>
+      </div>
+    `;
+
+    document.getElementById(areaElId).style.display = 'block';
+
+    document.getElementById(copyBtnId).addEventListener('click', () => {
+      const text = window[`_captionData_${outputElId}`];
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById(copyBtnId);
+        btn.textContent = 'COPIED!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'COPY ALL'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+  }
+
+  // CAROUSEL — GENERATE CAPTION
+  document.getElementById('genCaptionBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('genCaptionBtn');
+    btn.textContent = 'GENERATING...';
+    btn.disabled = true;
+    try {
+      const topic = document.getElementById('topicInput').value.trim();
+      const keywords = document.getElementById('keywordsInput').value.trim();
+      const summary = slides.map(s => s.text).join(' ').substring(0, 400);
+      await generateCaption(topic, keywords, summary, 'captionContent', 'captionArea', 'copyCaptionBtn');
+    } catch(e) {
+      document.getElementById('captionContent').innerHTML = `<div style="color:#c0392b;font-family:'Cutive Mono',monospace;font-size:11px;">Failed. Check API key.</div>`;
+      document.getElementById('captionArea').style.display = 'block';
+    }
+    btn.textContent = 'GENERATE CAPTION';
+    btn.disabled = false;
+  });
+
+  document.getElementById('closeCaptionBtn').addEventListener('click', () => {
+    document.getElementById('captionArea').style.display = 'none';
+  });
+
+  // SCRIPT MODE — GENERATE CAPTION
+  document.getElementById('genScriptCaptionBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('genScriptCaptionBtn');
+    btn.textContent = 'GENERATING...';
+    btn.disabled = true;
+    try {
+      const topic = document.getElementById('scriptTopicInput').value.trim();
+      const keywords = document.getElementById('scriptKeywordsInput').value.trim();
+      const summary = window._lastScript ? window._lastScript.substring(0, 400) : topic;
+      await generateCaption(topic, keywords, summary, 'scriptCaptionContent', 'scriptCaptionArea', 'copyScriptCaptionBtn');
+    } catch(e) {
+      document.getElementById('scriptCaptionContent').innerHTML = `<div style="color:#c0392b;font-family:'Cutive Mono',monospace;font-size:11px;">Failed. Check API key.</div>`;
+      document.getElementById('scriptCaptionArea').style.display = 'block';
+    }
+    btn.textContent = 'GENERATE CAPTION';
+    btn.disabled = false;
+  });
+
+  document.getElementById('closeScriptCaptionBtn').addEventListener('click', () => {
+    document.getElementById('scriptCaptionArea').style.display = 'none';
+  });
+
+  // ELEMENTS
+  const topicInput = document.getElementById('topicInput');
+  const angleInput = document.getElementById('angleInput');
+  const genBtn = document.getElementById('genBtn');
+  const btnText = document.getElementById('btnText');
+  const loadingBar = document.getElementById('loadingBar');
+  const outputArea = document.getElementById('outputArea');
+  const emptyState = document.getElementById('emptyState');
+  const slideCounter = document.getElementById('slideCounter');
+  const copySection = document.getElementById('copySection');
+  const copyAllBtn = document.getElementById('copyAllBtn');
+  const copySlideBtn = document.getElementById('copySlideBtn');
+  const errorBox = document.getElementById('errorBox');
+  const singleViewBtn = document.getElementById('singleViewBtn');
+  const gridViewBtn = document.getElementById('gridViewBtn');
+
+  // TONE BUTTONS
+  document.querySelectorAll('.tone-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedTone = btn.dataset.tone;
+    });
+  });
+
+  // BG OPTIONS
+  document.querySelectorAll('.bg-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.bg-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      selectedBg = opt.dataset.bg;
+      if (slides.length) renderOutput();
+    });
+  });
+
+  // VIEW TOGGLE
+  singleViewBtn.addEventListener('click', () => {
+    viewMode = 'single';
+    singleViewBtn.classList.add('active');
+    gridViewBtn.classList.remove('active');
+    if (slides.length) renderOutput();
+  });
+
+  gridViewBtn.addEventListener('click', () => {
+    viewMode = 'grid';
+    gridViewBtn.classList.add('active');
+    singleViewBtn.classList.remove('active');
+    if (slides.length) renderOutput();
+  });
+
+  // GENERATE
+  genBtn.addEventListener('click', generateCarousel);
+
+  topicInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) generateCarousel();
+  });
+
+  function buildPrompt(topic, angle, tone, keywords) {
+    const toneMap = {
+      brutal: 'brutally honest, direct, no softening',
+      cold: 'cold, clinical, emotionally detached but sharp',
+      raw: 'raw, vulnerable, honest in a way that stings',
+      haunting: 'haunting, quiet, leaves a ghost in the room'
+    };
+
+    return `You are a premium minimalist carousel writer for a dark psychology content brand.
+
+Generate exactly 10 slides for a carousel on this topic: "${topic}"
+${angle ? `Additional direction: ${angle}` : ''}
+${keywords ? `Content keywords to weave in: ${keywords}` : ''}
+Tone: ${toneMap[tone]}
+
+RULES:
+- Each slide: 1 to 4 lines maximum
+- No bullets, no hashtags, no emojis, no CTAs
+- No paragraphs
+- Write like someone finally saying the truth people avoid
+- Emotionally heavy, psychologically precise, controlled
+- Never write generic, cheesy, or motivational filler
+- Each slide must deepen, sharpen, or reframe
+- Final slide must be the hardest hit of the set
+- Use line breaks intentionally inside slides
+
+NARRATIVE ARC:
+- COVER: magnetic thesis, 1-3 words preferred, premium
+- SLIDE 1: recognition
+- SLIDE 2: deeper pattern
+- SLIDE 3: tension sharpens
+- SLIDE 4: hidden truth
+- SLIDE 5: consequence
+- SLIDE 6: deeper cut
+- SLIDE 7: reframe
+- SLIDE 8: hard acceptance
+- FINAL SLIDE: emotional aftershock, hardest line in the set
+
+Return ONLY this exact JSON format, no markdown, no explanation, no extra text:
+{
+  "slides": [
+    { "id": "cover", "label": "COVER", "text": "slide text here" },
+    { "id": "slide1", "label": "SLIDE 1", "text": "slide text here" },
+    { "id": "slide2", "label": "SLIDE 2", "text": "slide text here" },
+    { "id": "slide3", "label": "SLIDE 3", "text": "slide text here" },
+    { "id": "slide4", "label": "SLIDE 4", "text": "slide text here" },
+    { "id": "slide5", "label": "SLIDE 5", "text": "slide text here" },
+    { "id": "slide6", "label": "SLIDE 6", "text": "slide text here" },
+    { "id": "slide7", "label": "SLIDE 7", "text": "slide text here" },
+    { "id": "slide8", "label": "SLIDE 8", "text": "slide text here" },
+    { "id": "final", "label": "FINAL SLIDE", "text": "slide text here" }
+  ]
+}
+
+Use actual newline characters inside the text values for line breaks within a slide. Never use em dashes (—) in any text.`;
+  }
+
+  // CLEAN EM DASHES from any generated text
+  function cleanDashes(text) {
+    // em dash between words with no space: "word—word" → "word, word"
+    text = text.replace(/(\w)—(\w)/g, '$1, $2');
+    // em dash with spaces or remaining: " — " → " " or just remove
+    text = text.replace(/\s*—\s*/g, ' ');
+    return text;
+  }
+
+  async function fetchPexelsImages(topic, count) {
+    try {
+      const query = encodeURIComponent(topic);
+      const res = await fetch(`https://api.pexels.com/v1/search?query=${query}&per_page=${count}&orientation=square`, {
+        headers: { 'Authorization': CONFIG.PEXELS_KEY }
+      });
+      if (!res.ok) return Array(count).fill('');
+      const data = await res.json();
+      const photos = data.photos || [];
+      // Return portrait/large2x urls, cycling if fewer results than slides
+      return Array.from({ length: count }, (_, i) => {
+        const photo = photos[i % photos.length];
+        return photo ? photo.src.large2x : '';
+      });
+    } catch (e) {
+      return Array(count).fill('');
+    }
+  }
+
+  async function generateCarousel() {
+    const topic = topicInput.value.trim();
+    if (!topic) {
+      showError('Enter a topic first.');
+      return;
+    }
+    if (isGenerating) return;
+
+    isGenerating = true;
+    genBtn.disabled = true;
+    btnText.textContent = 'GENERATING...';
+    hideError();
+
+    // Animate loading bar
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress = Math.min(progress + Math.random() * 8, 85);
+      loadingBar.style.width = progress + '%';
+    }, 200);
+
+    try {
+      const prompt = buildPrompt(topic, angleInput.value.trim(), selectedTone, document.getElementById('keywordsInput').value.trim());
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CONFIG.ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+      const data = await response.json();
+      const raw = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+
+      // Parse JSON
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      slides = parsed.slides.map(s => ({ ...s, text: cleanDashes(s.text) }));
+      currentSlide = 0;
+      slideImages = [];
+
+      // Fetch one Pexels image per slide based on slide text keywords
+      btnText.textContent = 'FETCHING IMAGES...';
+      slideImages = await fetchPexelsImages(topic, slides.length);
+
+      clearInterval(progressInterval);
+      loadingBar.style.width = '100%';
+      setTimeout(() => { loadingBar.style.width = '0%'; }, 400);
+
+      renderOutput();
+      copySection.style.display = 'flex';
+
+    } catch (err) {
+      clearInterval(progressInterval);
+      loadingBar.style.width = '0%';
+      showError('Generation failed. Check your connection and try again.');
+      console.error(err);
+    }
+
+    isGenerating = false;
+    genBtn.disabled = false;
+    btnText.textContent = 'GENERATE CAROUSEL';
+  }
+
+  function renderOutput() {
+    emptyState.style.display = 'none';
+
+    if (viewMode === 'single') {
+      renderSingle();
+    } else {
+      renderGrid();
+    }
+
+    slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+  }
+
+  function renderSingle() {
+    const slide = slides[currentSlide];
+    const bgClass = selectedBg === 'dark' ? 'dark-bg' : 'light-bg';
+    const textSizeClass = currentSlide === 0 ? 'cover-text' : currentSlide === slides.length - 1 ? 'final-text' : 'body-text';
+    const imgUrl = slideImages[currentSlide] || '';
+    const overlayColor = selectedBg === 'dark' ? 'rgba(0,0,0,0.62)' : 'rgba(245,242,235,0.55)';
+
+    const bgStyle = imgUrl
+      ? `background-image: url('${imgUrl}'); background-size: cover; background-position: center;`
+      : '';
+
+    outputArea.innerHTML = `
+      <div class="single-view fade-in">
+        <div class="slide-card ${bgClass}" style="${bgStyle}">
+          ${imgUrl ? `<div style="position:absolute;inset:0;background:${overlayColor};"></div>` : ''}
+          <div class="slide-inner" style="position:relative;z-index:1;">
+            <div class="slide-text ${textSizeClass}">${escapeHtml(slide.text)}</div>
+          </div>
+        </div>
+
+        <div class="progress-dots" id="progressDots">
+          ${slides.map((_, i) => `<div class="dot ${i === currentSlide ? 'current' : 'filled'}" data-index="${i}"></div>`).join('')}
+        </div>
+
+        <div class="slide-nav">
+          <button class="nav-btn" id="prevBtn" ${currentSlide === 0 ? 'disabled' : ''}>←</button>
+          <div class="nav-index">${slide.label}</div>
+          <button class="nav-btn" id="nextBtn" ${currentSlide === slides.length - 1 ? 'disabled' : ''}>→</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentSlide > 0) { currentSlide--; renderOutput(); }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (currentSlide < slides.length - 1) { currentSlide++; renderOutput(); }
+    });
+
+    document.querySelectorAll('.dot').forEach(dot => {
+      dot.addEventListener('click', () => {
+        currentSlide = parseInt(dot.dataset.index);
+        renderOutput();
+      });
+    });
+
+    slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+  }
+
+  function renderGrid() {
+    const bgClass = selectedBg === 'dark' ? 'dark-bg' : 'light-bg';
+
+    outputArea.innerHTML = `
+      <div class="grid-view fade-in">
+        ${slides.map((slide, i) => {
+          const imgUrl = slideImages[i] || '';
+          const overlayColor = selectedBg === 'dark' ? 'rgba(0,0,0,0.62)' : 'rgba(245,242,235,0.55)';
+          const bgStyle = imgUrl ? `background-image:url('${imgUrl}');background-size:cover;background-position:center;` : '';
+          return `
+          <div class="grid-slide ${bgClass} ${i === currentSlide ? 'active-grid' : ''}" data-index="${i}" style="${bgStyle}">
+            ${imgUrl ? `<div style="position:absolute;inset:0;background:${overlayColor};border-radius:0;"></div>` : ''}
+            <div class="slide-text" style="position:relative;z-index:1;">${escapeHtml(slide.text)}</div>
+            <div class="slide-num-badge" style="position:absolute;bottom:5px;right:7px;z-index:2;">${i + 1}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    `;
+
+    document.querySelectorAll('.grid-slide').forEach(card => {
+      card.addEventListener('click', () => {
+        currentSlide = parseInt(card.dataset.index);
+        viewMode = 'single';
+        singleViewBtn.classList.add('active');
+        gridViewBtn.classList.remove('active');
+        renderOutput();
+      });
+    });
+
+    slideCounter.textContent = `— / ${slides.length}`;
+  }
+
+  // COPY
+  copyAllBtn.addEventListener('click', () => {
+    const all = slides.map((s, i) => `${s.label}\n${s.text}`).join('\n\n---\n\n');
+    navigator.clipboard.writeText(all).then(() => {
+      copyAllBtn.textContent = 'COPIED!';
+      copyAllBtn.classList.add('copied');
+      setTimeout(() => {
+        copyAllBtn.textContent = 'COPY ALL TEXT';
+        copyAllBtn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+
+  copySlideBtn.addEventListener('click', () => {
+    if (!slides[currentSlide]) return;
+    navigator.clipboard.writeText(slides[currentSlide].text).then(() => {
+      copySlideBtn.textContent = 'COPIED!';
+      copySlideBtn.classList.add('copied');
+      setTimeout(() => {
+        copySlideBtn.textContent = 'COPY SLIDE';
+        copySlideBtn.classList.remove('copied');
+      }, 2000);
+    });
+  });
+
+  // UTILS
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+  }
+
+  function showError(msg) {
+    errorBox.style.display = 'block';
+    errorBox.className = 'error-msg';
+    errorBox.textContent = msg;
+  }
+
+  function hideError() {
+    errorBox.style.display = 'none';
+  }
+
+  // CANVAS DRAW HELPER — draws bg image (or solid color) + overlay + text
+  async function drawSlideToCanvas(ctx, w, h, idx) {
+    const slide = slides[idx];
+    const bgColor = selectedBg === 'dark' ? '#0a0a0a' : '#f5f2eb';
+    const textColor = selectedBg === 'dark' ? '#f0ede6' : '#0a0a0a';
+    const overlayColor = selectedBg === 'dark' ? 'rgba(0,0,0,0.62)' : 'rgba(245,242,235,0.55)';
+    const imgUrl = slideImages[idx] || '';
+
+    // Background
+    if (imgUrl) {
+      await new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const scale = Math.max(w / img.width, h / img.height);
+          const iw = img.width * scale;
+          const ih = img.height * scale;
+          ctx.drawImage(img, (w - iw) / 2, (h - ih) / 2, iw, ih);
+          resolve();
+        };
+        img.onerror = () => {
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, w, h);
+          resolve();
+        };
+        img.src = imgUrl;
+      });
+      ctx.fillStyle = overlayColor;
+      ctx.fillRect(0, 0, w, h);
+    } else {
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    // Text
+    ctx.fillStyle = textColor;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const isCover = idx === 0;
+    const fSize = isCover ? 52 : 32;
+    const lineH = fSize * 1.9;
+    ctx.font = `${fSize}px 'Courier New', monospace`;
+    const lines = slide.text.split('\n');
+    const totalH = lines.length * lineH;
+    const startY = (h / 2) - (totalH / 2) + (lineH / 2);
+    lines.forEach((line, i) => {
+      ctx.fillText(line, w / 2, startY + i * lineH);
+    });
+  }
+
+  // EXPORT PNG
+  document.getElementById('exportBtn').addEventListener('click', async () => {
+    if (!slides[currentSlide]) return;
+    const exportBtn = document.getElementById('exportBtn');
+    exportBtn.textContent = 'EXPORTING...';
+
+    const W = 1080, H = 1920;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    await drawSlideToCanvas(ctx, W, H, currentSlide);
+
+    const link = document.createElement('a');
+    link.download = `slide-${currentSlide + 1}-${slides[currentSlide].label.toLowerCase().replace(' ', '-')}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+
+    exportBtn.textContent = 'EXPORTED!';
+    exportBtn.classList.add('copied');
+    setTimeout(() => {
+      exportBtn.textContent = 'EXPORT PNG';
+      exportBtn.classList.remove('copied');
+    }, 2000);
+  });
+
+  // EXPORT ALL AS ZIP
+  document.getElementById('exportAllBtn').addEventListener('click', async () => {
+    if (!slides.length) return;
+    const btn = document.getElementById('exportAllBtn');
+    btn.textContent = 'ZIPPING...';
+    btn.disabled = true;
+
+    const W = 1080, H = 1920;
+    const zip = new JSZip();
+
+    for (let idx = 0; idx < slides.length; idx++) {
+      btn.textContent = `ZIPPING ${idx + 1}/10...`;
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      await drawSlideToCanvas(ctx, W, H, idx);
+      const base64 = canvas.toDataURL('image/png').split(',')[1];
+      zip.file(`slide-${String(idx + 1).padStart(2, '0')}.png`, base64, { base64: true });
+    }
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    saveAs(blob, 'carousel-slides.zip');
+
+    btn.textContent = 'DOWNLOADED!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'EXPORT ALL';
+      btn.classList.remove('copied');
+      btn.disabled = false;
+    }, 2500);
+  });
+
+  // GENERATE SCRIPT
+  document.getElementById('genScriptBtn').addEventListener('click', async () => {
+    if (!slides.length) return;
+    const btn = document.getElementById('genScriptBtn');
+    const scriptArea = document.getElementById('scriptArea');
+    const scriptContent = document.getElementById('scriptContent');
+
+    btn.textContent = 'WRITING...';
+    btn.disabled = true;
+    scriptArea.style.display = 'block';
+    scriptContent.textContent = '';
+
+    const slideText = slides.map((s, i) => `${s.label}: ${s.text.replace(/\n/g, ' ')}`).join('\n');
+
+    const scriptPrompt = `You are a voiceover script writer for a dark psychology TikTok content brand. 
+
+Here are the 10 slides of a carousel:
+${slideText}
+
+Write a single flowing voiceover script based on these slides. The script will be read by an AI voice (ElevenLabs Daniel V3 — deep, calm, masculine, cinematic).
+
+RULES:
+- Write as one continuous narration, not slide by slide
+- No slide labels or numbers in the script
+- Spoken word style, not written word style
+- Short sentences. Natural pauses implied by punctuation
+- Tone: controlled, serious, psychologically precise
+- No filler words, no motivational clichés
+- Start strong, end harder
+- 150 to 220 words total
+- Use ellipsis (...) sparingly for dramatic pause
+- Write ONLY the script, nothing else`;
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CONFIG.ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: scriptPrompt }]
+        })
+      });
+
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+      const script = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+      scriptContent.textContent = script.trim();
+
+    } catch (err) {
+      scriptContent.textContent = 'Script generation failed. Check your API key.';
+    }
+
+    btn.textContent = 'GENERATE SCRIPT';
+    btn.disabled = false;
+  });
+
+  document.getElementById('copyScriptBtn').addEventListener('click', () => {
+    const text = document.getElementById('scriptContent').textContent;
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyScriptBtn');
+      btn.textContent = 'COPIED!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'COPY SCRIPT'; btn.classList.remove('copied'); }, 2000);
+    });
+  });
+
+  document.getElementById('closeScriptBtn').addEventListener('click', () => {
+    document.getElementById('scriptArea').style.display = 'none';
+  });
+
+  // GENERATE AUDIO via ElevenLabs
+  let audioBlob = null;
+
+  document.getElementById('genAudioBtn').addEventListener('click', async () => {
+    const scriptText = document.getElementById('scriptContent').textContent.trim();
+    const btn = document.getElementById('genAudioBtn');
+    const audioArea = document.getElementById('audioArea');
+    const audioPlayer = document.getElementById('audioPlayer');
+
+    if (!scriptText) {
+      // Auto-generate script first if empty
+      showError('Generate the script first, then click Generate Audio.');
+      return;
+    }
+
+    btn.textContent = 'GENERATING...';
+    btn.disabled = true;
+
+    try {
+      const EL_API_KEY = CONFIG.ELEVENLABS_KEY;
+      const VOICE_ID = CONFIG.ELEVENLABS_VOICE_ID;
+
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${VOICE_ID}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'xi-api-key': EL_API_KEY
+        },
+        body: JSON.stringify({
+          text: scriptText,
+          model_id: 'eleven_v3',
+          voice_settings: {
+            stability: 0.4,
+            similarity_boost: 0.85,
+            style: 0.3,
+            use_speaker_boost: true
+          }
+        })
+      });
+
+      if (!res.ok) throw new Error(await res.text());
+
+      audioBlob = await res.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      audioPlayer.src = audioUrl;
+      audioArea.style.display = 'block';
+      audioPlayer.play();
+
+    } catch (err) {
+      showError('Audio generation failed. Check your ElevenLabs API key and Voice ID.');
+      console.error(err);
+    }
+
+    btn.textContent = 'GENERATE AUDIO';
+    btn.disabled = false;
+  });
+
+  document.getElementById('downloadAudioBtn').addEventListener('click', () => {
+    if (!audioBlob) return;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(audioBlob);
+    link.download = 'voiceover.mp3';
+    link.click();
+  });
+
+  document.getElementById('closeAudioBtn').addEventListener('click', () => {
+    document.getElementById('audioArea').style.display = 'none';
+    document.getElementById('audioPlayer').pause();
+  });
+
+  // EXPORT VIDEO
+  document.getElementById('exportVideoBtn').addEventListener('click', async () => {
+    if (!slides.length) return;
+    const btn = document.getElementById('exportVideoBtn');
+
+    // Check MediaRecorder support
+    if (!window.MediaRecorder) {
+      showError('Video export not supported in this browser. Use Chrome.');
+      return;
+    }
+
+    btn.textContent = 'RENDERING...';
+    btn.disabled = true;
+
+    const VW = 1080, VH = 1920;
+    const fps = 30;
+    const secondsPerSlide = 3;
+    const framesPerSlide = fps * secondsPerSlide;
+
+    // Offscreen canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = VW;
+    canvas.height = VH;
+    const ctx = canvas.getContext('2d');
+
+    // Setup MediaRecorder
+    const stream = canvas.captureStream(fps);
+    const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ? 'video/webm;codecs=vp9'
+      : 'video/webm';
+    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });
+    const chunks = [];
+    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+
+    // If audio is available, attach it to stream
+    if (audioBlob) {
+      try {
+        const audioCtx = new AudioContext();
+        const arrayBuf = await audioBlob.arrayBuffer();
+        const audioBuf = await audioCtx.decodeAudioData(arrayBuf);
+        const source = audioCtx.createBufferSource();
+        source.buffer = audioBuf;
+        const dest = audioCtx.createMediaStreamDestination();
+        source.connect(dest);
+        source.start(0);
+        dest.stream.getAudioTracks().forEach(t => stream.addTrack(t));
+      } catch(e) {
+        console.warn('Audio attach failed, exporting video only:', e);
+      }
+    }
+
+    recorder.start();
+
+    // Draw each slide for framesPerSlide frames
+    for (let idx = 0; idx < slides.length; idx++) {
+      btn.textContent = `RENDERING ${idx + 1}/${slides.length}...`;
+      await drawSlideToCanvas(ctx, VW, VH, idx);
+
+      // Hold the frame for secondsPerSlide seconds
+      const holdMs = secondsPerSlide * 1000;
+      await new Promise(resolve => setTimeout(resolve, holdMs));
+    }
+
+    recorder.stop();
+
+    await new Promise(resolve => { recorder.onstop = resolve; });
+
+    const videoBlob = new Blob(chunks, { type: mimeType });
+    const url = URL.createObjectURL(videoBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'carousel-video.webm';
+    link.click();
+
+    btn.textContent = 'VIDEO EXPORTED!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'EXPORT VIDEO';
+      btn.classList.remove('copied');
+      btn.disabled = false;
+    }, 3000);
+  });
+
+  // WAV ENCODER
+  function bufferToWav(buffer) {
+    const numCh = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const numSamples = buffer.length;
+    const bytesPerSample = 2;
+    const blockAlign = numCh * bytesPerSample;
+    const byteRate = sampleRate * blockAlign;
+    const dataSize = numSamples * blockAlign;
+    const arrayBuf = new ArrayBuffer(44 + dataSize);
+    const view = new DataView(arrayBuf);
+    const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+    writeStr(0, 'RIFF');
+    view.setUint32(4, 36 + dataSize, true);
+    writeStr(8, 'WAVE');
+    writeStr(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, numCh, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, bytesPerSample * 8, true);
+    writeStr(36, 'data');
+    view.setUint32(40, dataSize, true);
+    let offset = 44;
+    for (let i = 0; i < numSamples; i++) {
+      for (let c = 0; c < numCh; c++) {
+        const s = Math.max(-1, Math.min(1, buffer.getChannelData(c)[i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        offset += 2;
+      }
+    }
+    return new Blob([arrayBuf], { type: 'audio/wav' });
+  }
+
+  // KEYBOARD NAV
+  document.addEventListener('keydown', e => {
+    if (!slides.length || viewMode !== 'single') return;
+    if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) {
+      currentSlide++; renderOutput();
+    }
+    if (e.key === 'ArrowLeft' && currentSlide > 0) {
+      currentSlide--; renderOutput();
+    }
+  });
+
+  // PWA — register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+</script>
+</body>
+</html>

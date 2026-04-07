@@ -1,0 +1,18 @@
+{
+  "name": "Loud Minds Engine",
+  "short_name": "LM Engine",
+  "description": "Free AI content creation tool for dark psychology creators.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230a0a0a'/><text x='50%' y='54%' font-family='monospace' font-size='260' fill='%23f0ede6' text-anchor='middle' dominant-baseline='middle'>▣</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
