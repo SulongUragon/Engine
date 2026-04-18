@@ -607,9 +607,17 @@
 <!-- ONBOARDING OVERLAY -->
 <div id="onboarding" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9999;overflow-y:auto;display:flex;align-items:center;justify-content:center;">
   <div style="max-width:480px;width:100%;padding:40px 32px;">
-    <div style="font-family:'Cutive Mono',monospace;font-size:11px;letter-spacing:0.3em;color:#6a6a6a;margin-bottom:8px;">LOUD MINDS ENGINE</div>
-    <div style="font-family:'Space Mono',monospace;font-size:22px;color:#f0ede6;margin-bottom:8px;">Setup your API keys</div>
-    <div style="font-family:'Cutive Mono',monospace;font-size:12px;color:#3a3a3a;line-height:1.8;margin-bottom:32px;">Your keys are stored locally in your browser. They are never sent to any server other than the respective APIs.</div>
+    <!-- Logo -->
+    <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:32px;gap:16px;">
+      <img src="logo.jpg" alt="Engine" style="width:120px;height:120px;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 16px rgba(0,229,255,0.9)) drop-shadow(0 0 40px rgba(0,229,255,0.5));-webkit-mask-image:radial-gradient(ellipse 80% 80% at center, black 50%, transparent 100%);mask-image:radial-gradient(ellipse 80% 80% at center, black 50%, transparent 100%);">
+      <div style="text-align:center;">
+        <div style="font-family:'Cutive Mono',monospace;font-size:18px;letter-spacing:0.3em;color:#c8c8b8;"><span style="color:#00e5ff;font-weight:700;">LOUD MINDS</span> ENGINE</div>
+        <div style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.3em;color:#1a6a6a;margin-top:4px;">DARK PSYCHOLOGY TOOLS</div>
+      </div>
+      <a href="https://loudminds.club" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#1a6a6a;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#1a6a6a'">← loudminds.club</a>
+    </div>
+    <div style="font-family:'Space Mono',monospace;font-size:18px;color:#00e5ff;margin-bottom:8px;">Setup your API keys</div>
+    <div style="font-family:'Cutive Mono',monospace;font-size:12px;color:#1a6a6a;line-height:1.8;margin-bottom:32px;">Your keys are stored locally in your browser. They are never sent to any server other than the respective APIs.</div>
 
     <div style="display:flex;flex-direction:column;gap:20px;">
 
