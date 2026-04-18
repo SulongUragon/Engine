@@ -51,7 +51,13 @@
   /* HEADER */
   header {
     border-bottom: 1px solid var(--border);
-    padding: 20px 32px;
+    background: rgba(2,10,10,0.95);
+    backdrop-filter: blur(16px);
+    position: sticky; top: 0; z-index: 200;
+  }
+
+  .header-top {
+    padding: 16px 28px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -59,17 +65,55 @@
 
   .logo {
     font-family: var(--typewriter);
-    font-size: 22px;
-    letter-spacing: 0.3em;
+    font-size: 20px;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
     color: #c8c8b8;
     font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
+
+  .logo-text { display: flex; flex-direction: column; gap: 2px; }
 
   .logo span {
     color: var(--accent);
     font-weight: 700;
   }
+
+  .logo-sub {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-family: var(--mono);
+    font-weight: 400;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 28px;
+    border-top: 1px solid var(--border);
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:hover { color: var(--text-mid); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
   .version {
     font-size: 10px;
@@ -81,15 +125,19 @@
   main {
     display: grid;
     grid-template-columns: 380px 1fr;
-    height: calc(100vh - 61px);
+    height: calc(100vh - 105px);
+    gap: 16px;
+    padding: 16px;
   }
 
   /* LEFT PANEL */
   .panel-left {
-    border-right: 1px solid var(--border);
+    border: 1px solid var(--border);
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: var(--surface);
   }
 
   .panel-label {
@@ -126,6 +174,7 @@
   textarea, input[type="text"] {
     background: var(--surface);
     border: 1px solid var(--border-light);
+    border-radius: 10px;
     color: var(--text);
     font-family: var(--typewriter);
     font-size: 13px;
@@ -138,7 +187,7 @@
   }
 
   textarea:focus, input[type="text"]:focus {
-    border-color: #3a3a3a;
+    border-color: rgba(0,229,255,0.3);
   }
 
   textarea::placeholder, input::placeholder {
@@ -158,6 +207,7 @@
   .tone-btn {
     background: var(--surface);
     border: 1px solid var(--border-light);
+    border-radius: 8px;
     color: var(--text-dim);
     font-family: var(--mono);
     font-size: 9px;
@@ -169,13 +219,14 @@
     text-align: center;
   }
 
-  .tone-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
-  .tone-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.06); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
+  .tone-btn:hover { border-color: var(--text-mid); color: var(--text-mid); }
+  .tone-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); box-shadow: 0 0 12px rgba(0,229,255,0.2); }
 
-  /* SCRIPT MODE BUTTONS — same style as tone-btn */
+  /* SCRIPT MODE BUTTONS */
   .stone-btn, .slen-btn {
     background: var(--surface);
     border: 1px solid var(--border-light);
+    border-radius: 8px;
     color: var(--text-dim);
     font-family: var(--mono);
     font-size: 9px;
@@ -186,13 +237,14 @@
     transition: all 0.15s;
     text-align: center;
   }
-  .stone-btn:hover, .slen-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
-  .stone-btn.active, .slen-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.06); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
+  .stone-btn:hover, .slen-btn:hover { border-color: var(--text-mid); color: var(--text-mid); }
+  .stone-btn.active, .slen-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); box-shadow: 0 0 12px rgba(0,229,255,0.2); }
 
   /* QUOTE TONE BUTTONS */
   .qtone-btn {
     background: var(--surface);
     border: 1px solid var(--border-light);
+    border-radius: 8px;
     color: var(--text-dim);
     font-family: var(--mono);
     font-size: 9px;
@@ -203,8 +255,8 @@
     transition: all 0.15s;
     text-align: center;
   }
-  .qtone-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
-  .qtone-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.06); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
+  .qtone-btn:hover { border-color: var(--text-mid); color: var(--text-mid); }
+  .qtone-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.08); box-shadow: 0 0 12px rgba(0,229,255,0.2); }
 
   /* BG TOGGLE */
   .bg-toggle {
@@ -231,24 +283,26 @@
 
   /* GENERATE BTN */
   .generate-btn {
-    margin: 0 24px 24px;
-    background: transparent;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    box-shadow: 0 0 20px rgba(0,229,255,0.15), inset 0 0 20px rgba(0,229,255,0.04);
+    margin: 0 16px 16px;
+    background: var(--accent);
+    color: #020a0a;
+    border: none;
+    border-radius: 10px;
     font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.35em;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     padding: 16px;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.2s;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 0 24px rgba(0,229,255,0.35);
   }
 
-  .generate-btn:hover { opacity: 0.9; box-shadow: 0 0 30px rgba(0,229,255,0.35), inset 0 0 20px rgba(0,229,255,0.08); }
-  .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .generate-btn:hover { background: #33eeff; box-shadow: 0 0 36px rgba(0,229,255,0.5); transform: translateY(-1px); }
+  .generate-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
   .generate-btn .btn-text { position: relative; z-index: 1; }
 
@@ -265,6 +319,9 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--surface);
   }
 
   .panel-top {
@@ -443,6 +500,7 @@
   .copy-btn {
     background: var(--surface);
     border: 1px solid var(--border-light);
+    border-radius: 8px;
     color: var(--text-dim);
     font-family: var(--mono);
     font-size: 9px;
@@ -453,8 +511,8 @@
     transition: all 0.15s;
   }
 
-  .copy-btn:hover { border-color: #3a3a3a; color: var(--text); }
-  .copy-btn.copied { color: #00e5ff; border-color: #00e5ff; box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+  .copy-btn:hover { border-color: var(--text-mid); color: var(--text); }
+  .copy-btn.copied { color: #00e5ff; border-color: #00e5ff; background: rgba(0,229,255,0.06); box-shadow: 0 0 10px rgba(0,229,255,0.3); }
 
   /* EMPTY STATE */
   .empty-state {
@@ -596,21 +654,24 @@
 
 <div class="app">
   <header>
-    <div class="logo" style="display:flex;align-items:center;gap:10px;">
-      <img src="logo.jpg" alt="Engine" style="width:64px;height:64px;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 10px rgba(0,229,255,0.9)) drop-shadow(0 0 28px rgba(0,229,255,0.5));-webkit-mask-image:radial-gradient(ellipse 80% 80% at center, black 50%, transparent 100%);mask-image:radial-gradient(ellipse 80% 80% at center, black 50%, transparent 100%);">
-      <span>LOUD MINDS</span> ENGINE
+    <div class="header-top">
+      <div class="logo">
+        <img src="logo.jpg" alt="Engine" style="width:52px;height:52px;object-fit:cover;border-radius:50%;filter:drop-shadow(0 0 10px rgba(0,229,255,0.9)) drop-shadow(0 0 28px rgba(0,229,255,0.5));-webkit-mask-image:radial-gradient(ellipse 80% 80% at center, black 50%, transparent 100%);mask-image:radial-gradient(ellipse 80% 80% at center, black 50%, transparent 100%);">
+        <div class="logo-text">
+          <div><span>Loud Minds</span> Engine</div>
+          <div class="logo-sub">dark psychology tools</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <a href="https://loudminds.club" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#1a6a6a;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#1a6a6a'">← loudminds.club</a>
+        <button id="settingsBtn" style="background:none;border:1px solid #0d2626;color:#1a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:6px 12px;cursor:pointer;border-radius:8px;transition:all 0.2s;" onmouseover="this.style.borderColor='#00e5ff';this.style.color='#00e5ff';" onmouseout="this.style.borderColor='#0d2626';this.style.color='#1a6a6a';">⚙ Keys</button>
+      </div>
     </div>
-    <div style="display:flex; gap:4px;">
-      <button class="view-btn active" id="modeCarousel" style="font-size:9px; padding:6px 14px;">CAROUSEL</button>
-      <button class="view-btn" id="modeScript" style="font-size:9px; padding:6px 14px;">SCRIPT</button>
-      <button class="view-btn" id="modeQuote" style="font-size:9px; padding:6px 14px;">QUOTE</button>
-      <button class="view-btn" id="modeCalendar" style="font-size:9px; padding:6px 14px;">CALENDAR</button>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <a href="https://loudminds.club" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#444;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#00e5ff'" onmouseout="this.style.color='#444'">← loudminds.club</a>
-      <span style="color:#0d2626;">|</span>
-      <div class="version">v2.0 — LOUD MINDS</div>
-      <button id="settingsBtn" style="background:none;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:5px 10px;cursor:pointer;">⚙ KEYS</button>
+    <div class="tab-bar">
+      <button class="tab-btn active" id="modeCarousel">Carousel</button>
+      <button class="tab-btn" id="modeScript">Script</button>
+      <button class="tab-btn" id="modeQuote">Quote</button>
+      <button class="tab-btn" id="modeCalendar">Calendar</button>
     </div>
   </header>
 
