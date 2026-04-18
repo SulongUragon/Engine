@@ -20,14 +20,14 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0a0a0a;
-    --surface: #111111;
-    --border: #1e1e1e;
-    --border-light: #2a2a2a;
-    --text: #f0ede6;
-    --text-dim: #6a6a6a;
-    --text-mid: #999;
-    --accent: #f0ede6;
+    --bg: #020a0a;
+    --surface: #091212;
+    --border: #0d2626;
+    --border-light: #143333;
+    --text: #00e5ff;
+    --text-dim: #1a6a6a;
+    --text-mid: #2a9999;
+    --accent: #00e5ff;
     --red: #c0392b;
     --mono: 'Space Mono', monospace;
     --typewriter: 'Cutive Mono', monospace;
@@ -168,7 +168,7 @@
   }
 
   .tone-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
-  .tone-btn.active { border-color: var(--text); color: var(--text); background: #161616; }
+  .tone-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.06); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
 
   /* SCRIPT MODE BUTTONS — same style as tone-btn */
   .stone-btn, .slen-btn {
@@ -185,7 +185,7 @@
     text-align: center;
   }
   .stone-btn:hover, .slen-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
-  .stone-btn.active, .slen-btn.active { border-color: var(--text); color: var(--text); background: #161616; }
+  .stone-btn.active, .slen-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.06); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
 
   /* QUOTE TONE BUTTONS */
   .qtone-btn {
@@ -202,7 +202,7 @@
     text-align: center;
   }
   .qtone-btn:hover { border-color: #3a3a3a; color: var(--text-mid); }
-  .qtone-btn.active { border-color: var(--text); color: var(--text); background: #161616; }
+  .qtone-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.06); box-shadow: 0 0 10px rgba(0,229,255,0.2); }
 
   /* BG TOGGLE */
   .bg-toggle {
@@ -230,9 +230,10 @@
   /* GENERATE BTN */
   .generate-btn {
     margin: 0 24px 24px;
-    background: var(--text);
-    color: var(--bg);
-    border: none;
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 20px rgba(0,229,255,0.15), inset 0 0 20px rgba(0,229,255,0.04);
     font-family: var(--mono);
     font-size: 10px;
     letter-spacing: 0.35em;
@@ -244,7 +245,7 @@
     overflow: hidden;
   }
 
-  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:hover { opacity: 0.9; box-shadow: 0 0 30px rgba(0,229,255,0.35), inset 0 0 20px rgba(0,229,255,0.08); }
   .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   .generate-btn .btn-text { position: relative; z-index: 1; }
@@ -296,7 +297,7 @@
     transition: all 0.15s;
   }
 
-  .view-btn.active { border-color: var(--text); color: var(--text); }
+  .view-btn.active { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 12px rgba(0,229,255,0.25); }
 
   /* CAROUSEL OUTPUT */
   .output-area {
@@ -451,7 +452,7 @@
   }
 
   .copy-btn:hover { border-color: #3a3a3a; color: var(--text); }
-  .copy-btn.copied { color: #7ec98f; border-color: #7ec98f; }
+  .copy-btn.copied { color: #00e5ff; border-color: #00e5ff; box-shadow: 0 0 8px rgba(0,229,255,0.3); }
 
   /* EMPTY STATE */
   .empty-state {
@@ -586,7 +587,7 @@
 
       <div id="ob-error" style="display:none;color:#c0392b;font-family:'Cutive Mono',monospace;font-size:11px;"></div>
 
-      <button id="ob-save" style="background:#f0ede6;color:#0a0a0a;border:none;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.35em;padding:16px;cursor:pointer;width:100%;">SAVE AND START</button>
+      <button id="ob-save" style="background:transparent;color:#00e5ff;border:1px solid #00e5ff;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.35em;padding:16px;cursor:pointer;width:100%;box-shadow:0 0 20px rgba(0,229,255,0.2);">SAVE AND START</button>
     </div>
   </div>
 </div>
@@ -600,8 +601,12 @@
       <button class="view-btn" id="modeQuote" style="font-size:9px; padding:6px 14px;">QUOTE</button>
       <button class="view-btn" id="modeCalendar" style="font-size:9px; padding:6px 14px;">CALENDAR</button>
     </div>
-    <div class="version">v2.0 — LOUD MINDS</div>
-    <button id="settingsBtn" style="background:none;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:5px 10px;cursor:pointer;">⚙ KEYS</button>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="https://loudminds.club" style="font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;color:#444;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#f0ede6'" onmouseout="this.style.color='#444'">← loudminds.club</a>
+      <span style="color:#2a2a2a;">|</span>
+      <div class="version">v2.0 — LOUD MINDS</div>
+      <button id="settingsBtn" style="background:none;border:1px solid #2a2a2a;color:#6a6a6a;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:0.2em;padding:5px 10px;cursor:pointer;">⚙ KEYS</button>
+    </div>
   </header>
 
   <main>
