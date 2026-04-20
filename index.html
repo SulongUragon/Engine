@@ -968,20 +968,36 @@
 
 <script>
   // ============================================================
-  // CONFIG — loads from localStorage, set via onboarding screen
+  // CONFIG — reads from .loudminds.club cookies first, falls back to localStorage
   // ============================================================
   const STORAGE_KEY = 'loudminds_config';
+  const COOKIE_DOMAIN = '.loudminds.club';
+
+  function getCookie(n) { const m=document.cookie.split("; ").find(r=>r.startsWith(n+"=")); return m?decodeURIComponent(m.split("=")[1]):""; }
+  function setCookie(n,v) { if(!v) return; document.cookie=`${n}=${encodeURIComponent(v)}; domain=${COOKIE_DOMAIN}; path=/; SameSite=Lax; max-age=31536000`; }
 
   function loadConfig() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
+      const local = saved ? JSON.parse(saved) : {};
+      return {
+        ANTHROPIC_KEY:      getCookie('lm_anthropic_key')      || local.ANTHROPIC_KEY      || '',
+        ELEVENLABS_KEY:     getCookie('lm_elevenlabs_key')     || local.ELEVENLABS_KEY     || '',
+        ELEVENLABS_VOICE_ID:getCookie('lm_elevenlabs_voice_id')|| local.ELEVENLABS_VOICE_ID|| '',
+        PEXELS_KEY:         getCookie('lm_pexels_key')         || local.PEXELS_KEY         || '',
+      };
     } catch(e) {}
     return { ANTHROPIC_KEY: '', ELEVENLABS_KEY: '', ELEVENLABS_VOICE_ID: '', PEXELS_KEY: '' };
   }
 
   function saveConfig(cfg) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch(e) {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+      setCookie('lm_anthropic_key',      cfg.ANTHROPIC_KEY);
+      setCookie('lm_elevenlabs_key',     cfg.ELEVENLABS_KEY);
+      setCookie('lm_elevenlabs_voice_id',cfg.ELEVENLABS_VOICE_ID);
+      setCookie('lm_pexels_key',         cfg.PEXELS_KEY);
+    } catch(e) {}
   }
 
   const CONFIG = loadConfig();
